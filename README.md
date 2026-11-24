@@ -2,8 +2,6 @@
 
 Radio VI es un reproductor web independiente para explorar un catálogo de emisoras y programas bajo demanda. El selector, las portadas de la demo y las transiciones se diseñaron para esta web. El catálogo usa nombres y referencias de los [créditos de Rockstar Games](https://www.rockstargames.com/VI/credits) y de la [investigación del proyecto](docs/RESEARCH.md).
 
-[Abrir Radio VI en GitHub Pages](https://impaul17.github.io/radio-vi/)
-
 ## Abrir en local
 
 Desde la carpeta del proyecto, ejecuta:
@@ -16,9 +14,9 @@ Abre [Radio VI en tu navegador](http://127.0.0.1:4173/). La web usa HTML, CSS y 
 
 ## Escuchar
 
-Selecciona una emisora o un programa y abre **Mi biblioteca**. Puedes cargar un audio, una portada y un archivo de letras con marcas de tiempo en formato LRC, VTT o SRT. El navegador lee los archivos elegidos en tu equipo y conserva la biblioteca y la posición de cada pista durante la sesión actual de la página.
+Selecciona una emisora o un programa y abre **Mi biblioteca**. Puedes cargar un audio, una portada y un archivo de letras con marcas de tiempo en formato LRC, VTT o SRT. **Varias portadas** asigna las imágenes por nombre de emisora o programa. El navegador lee los archivos elegidos en tu equipo y conserva la biblioteca y la posición de cada pista durante la sesión actual de la página.
 
-Recorre el selector con el ratón, un gesto horizontal, ←/→ o L1/R1. Usa ↑/↓ o la cruceta para cambiar entre Radio y On Demand. Espacio y el botón ✕ encienden o apagan la radio. La tecla L y el botón △ muestran u ocultan las letras. El botón del reproductor pausa o reanuda el audio.
+Recorre el selector con el ratón, un gesto horizontal, ←/→ o L1/R1. Usa ↑/↓ o la cruceta o el stick derecho para cambiar entre Radio y On Demand. Espacio y el botón ✕ encienden o apagan la radio. La tecla L y el botón △ muestran u ocultan las letras. El botón del reproductor pausa o reanuda el audio.
 
 ## GitHub Pages
 

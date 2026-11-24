@@ -15,30 +15,39 @@
   <header class="topbar">
     <a class="wordmark" aria-label="Radio VI, inicio" href="./"><span class="signal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span> RADIO <em>VI</em></a>
     <div class="header-actions">
+      <a class="official-link" href="https://www.rockstargames.com/VI/music" target="_blank" rel="noopener noreferrer">Música de GTA VI <span aria-hidden="true">↗</span></a>
       <span id="gamepad" class="gamepad" hidden><span aria-hidden="true">●</span> Mando conectado</span>
       <button class="library" id="open-library" type="button"><span aria-hidden="true">＋</span> Mi biblioteca</button>
     </div>
   </header>
   <main class="tuner" id="tuner">
-    <div class="mode-switch" role="tablist" aria-label="Modo de escucha">
-      <button id="tab-radio" role="tab" type="button" aria-selected="true" aria-controls="receiver">Radio</button>
-      <button id="tab-demand" role="tab" type="button" aria-selected="false" aria-controls="receiver" tabindex="-1">On Demand</button>
+    <div class="deck-header">
+      <div class="mode-switch" role="tablist" aria-label="Modo de escucha">
+        <button id="tab-radio" role="tab" type="button" aria-selected="true" aria-controls="receiver">Radio</button>
+        <button id="tab-demand" role="tab" type="button" aria-selected="false" aria-controls="receiver" tabindex="-1">On Demand</button>
+      </div>
+      <button id="power" class="action power" type="button"><span class="face-button" aria-hidden="true">×</span><span id="power-label">Apagar</span></button>
     </div>
     <section class="receiver" id="receiver" role="tabpanel" aria-labelledby="tab-radio">
       <div class="station-rail" id="station-rail">
-        <button id="previous" class="rail-button" type="button" aria-label="Anterior"><span aria-hidden="true">‹</span><kbd aria-hidden="true">L1</kbd></button>
+        <button id="previous" class="rail-button" type="button" aria-label="Anterior"><span aria-hidden="true">‹</span></button>
         <div id="station-cards" class="station-cards" aria-label="Selector de emisoras"></div>
-        <button id="next" class="rail-button" type="button" aria-label="Siguiente"><span aria-hidden="true">›</span><kbd aria-hidden="true">R1</kbd></button>
+        <button id="next" class="rail-button" type="button" aria-label="Siguiente"><span aria-hidden="true">›</span></button>
       </div>
-      <div class="dial" id="dial" aria-hidden="true"><span class="dial-fill"></span><span class="dial-marker"></span></div>
-      <div class="station-meta" id="station-meta" aria-live="polite" aria-atomic="true">
-        <p class="station-band"><span id="station-genre"></span><span class="band-dot" aria-hidden="true"></span><span id="station-frequency"></span></p>
-        <h1 id="station-name">Thrillbilly Mud Club</h1>
-        <p class="station-track"><span id="station-track"></span><span id="station-artist"></span></p>
+      <div class="tuning-controls">
+        <button id="shoulder-left" class="shoulder-button" type="button" aria-label="L1">L1</button>
+        <div class="dial" id="dial" aria-hidden="true"><span class="dial-fill"></span><span class="dial-marker"></span></div>
+        <button id="shoulder-right" class="shoulder-button" type="button" aria-label="R1">R1</button>
       </div>
-      <div class="tuner-actions">
-        <button id="power" class="action" type="button"><span class="face-button" aria-hidden="true">×</span><span id="power-label">Apagar</span></button>
-        <button id="lyrics-button" class="action" type="button" aria-expanded="false" aria-controls="lyrics-panel"><span class="face-button" aria-hidden="true">△</span> Letras</button>
+      <div class="station-details">
+        <div class="station-meta" id="station-meta" aria-live="polite" aria-atomic="true">
+          <h1 id="station-name">Thrillbilly Mud Club Radio</h1>
+          <p class="station-track"><span id="station-track"></span><span id="station-artist"></span></p>
+        </div>
+        <div class="station-tools">
+          <p class="station-band"><span id="station-genre"></span><span class="band-dot" aria-hidden="true"></span><span id="station-frequency"></span></p>
+          <button id="lyrics-button" class="action" type="button" aria-expanded="false" aria-controls="lyrics-panel"><span class="face-button" aria-hidden="true">△</span> Letras</button>
+        </div>
       </div>
       <section id="lyrics-panel" class="lyrics-panel" aria-label="Letras sincronizadas" hidden>
         <p id="lyric-previous" class="lyric-context"></p><p id="lyric-line"></p><p id="lyric-next" class="lyric-context"></p>
@@ -65,19 +74,23 @@
     <div class="file-options">
       <button type="button" id="choose-audio"><strong>Audio</strong><span id="audio-file-label">Elegir MP3, WAV u OGG</span></button>
       <button type="button" id="choose-cover"><strong>Portada</strong><span id="cover-file-label">Elegir PNG, JPEG o WebP</span></button>
+      <button type="button" id="choose-cover-batch"><strong>Varias portadas</strong><span>Asociar imágenes por nombre</span></button>
       <button type="button" id="choose-lyrics"><strong>Letra</strong><span id="lyric-file-label">Elegir LRC, VTT o SRT</span></button>
     </div>
     <p class="dialog-note">Puedes asignar tus archivos a cada emisora o programa durante la sesión.</p>
+    <p id="cover-batch-status" class="dialog-note" role="status" hidden></p>
     <p id="library-error" class="error" role="status" hidden></p>
   </dialog>
   <dialog id="help-dialog" aria-labelledby="help-title">
     <div class="dialog-top"><h2 id="help-title">Controles</h2><form method="dialog"><button class="close" aria-label="Cerrar" type="submit">×</button></form></div>
-    <dl class="help-keys"><dt>Cambiar de canal</dt><dd>← → o L1 / R1</dd><dt>Cambiar de modo</dt><dd>↑ ↓ o cruceta</dd><dt>Encender o apagar</dt><dd>Espacio o ×</dd><dt>Mostrar letras</dt><dd>L o △</dd></dl>
+    <dl class="help-keys"><dt>Cambiar de canal</dt><dd>← → o L1 / R1</dd><dt>Cambiar de modo</dt><dd>↑ ↓, cruceta o stick derecho</dd><dt>Encender o apagar</dt><dd>Espacio o ×</dd><dt>Mostrar letras</dt><dd>L o △</dd></dl>
     <p class="dialog-note">Radio VI es un proyecto de fans. Los títulos del catálogo sirven de referencia. Añade tus archivos en Mi biblioteca para escuchar.</p>
+    <p class="photo-credits"><a href="https://www.rockstargames.com/VI/music" target="_blank" rel="noopener noreferrer">Escuchar las muestras oficiales de Rockstar</a></p>
     <div id="photo-credits" class="photo-credits"></div>
   </dialog>
   <input id="audio-file" type="file" accept="audio/*,.mp3,.wav,.ogg,.opus,.m4a,.flac" hidden>
   <input id="cover-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+  <input id="cover-batch-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
   <input id="lyrics-file" type="file" accept=".lrc,.vtt,.srt,text/plain,text/vtt" hidden>
   <audio id="audio" preload="metadata"></audio>
 </body>

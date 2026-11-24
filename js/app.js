@@ -1,6 +1,7 @@
 import { stations, onDemand, sceneNames } from "./catalog.js";
 import { wireControls } from "./controls.js";
 import { createPlayer } from "./player.js";
+import { importCoverBatch } from "./cover-import.js";
 
 const get = (id) => document.getElementById(id);
 const setText = (id, value) => {
@@ -251,6 +252,8 @@ for (const id of ["tab-radio", "tab-demand"]) {
 
 get("previous").addEventListener("click", () => step(-1));
 get("next").addEventListener("click", () => step(1));
+get("shoulder-left").addEventListener("click", () => step(-1));
+get("shoulder-right").addEventListener("click", () => step(1));
 get("power").addEventListener("click", () => setPower(!power));
 get("lyrics-button").addEventListener("click", toggleLyrics);
 get("play").addEventListener("click", togglePlayback);
@@ -261,6 +264,35 @@ get("volume").addEventListener("input", (event) => player.setVolume(event.target
 
 get("choose-audio").addEventListener("click", () => get("audio-file").click());
 get("choose-cover").addEventListener("click", () => get("cover-file").click());
+const batchButton = get("choose-cover-batch");
+const batchInput = get("cover-batch-file");
+const batchStatus = get("cover-batch-status");
+batchButton.addEventListener("click", () => batchInput.click());
+batchInput.addEventListener("change", async () => {
+  const files = [...batchInput.files];
+  batchInput.value = "";
+  if (!files.length) return;
+
+  batchButton.disabled = true;
+  batchStatus.hidden = false;
+  batchStatus.textContent = "Leyendo portadas…";
+  try {
+    const { covers: imported, unmatched } = await importCoverBatch(files, [...stations, ...onDemand]);
+    for (const [id, cover] of imported) {
+      const previous = covers.get(id);
+      covers.set(id, cover);
+      if (previous) URL.revokeObjectURL(previous.url);
+    }
+    renderSelection();
+    renderPlayback(playback);
+    batchStatus.textContent = imported.size === 1 ? "1 portada asignada." : imported.size + " portadas asignadas.";
+    if (unmatched) batchStatus.textContent += " Sin asignar: " + unmatched + ".";
+  } catch {
+    batchStatus.textContent = "No se pudo leer la selección de portadas.";
+  } finally {
+    batchButton.disabled = false;
+  }
+});
 get("choose-lyrics").addEventListener("click", () => get("lyrics-file").click());
 useFile("audio-file", (file) => {
   if (player.loadAudio(file) && !power) {
@@ -323,7 +355,8 @@ wireControls({
   next: () => step(1),
   togglePower: () => setPower(!power),
   toggleLyrics,
-  toggleMode,
+  showRadio: () => setMode("radio"),
+  showDemand: () => setMode("demand"),
   isActive: () => !libraryDialog.open && !helpDialog.open,
   onGamepadChange: (connected) => { get("gamepad").hidden = !connected; },
 });

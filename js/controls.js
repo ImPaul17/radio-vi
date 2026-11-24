@@ -1,8 +1,8 @@
 const keyBindings = new Map([
   ["arrowleft", "previous"],
   ["arrowright", "next"],
-  ["arrowup", "toggleMode"],
-  ["arrowdown", "toggleMode"],
+  ["arrowup", "showRadio"],
+  ["arrowdown", "showDemand"],
   ["[", "previous"],
   ["]", "next"],
   [" ", "togglePower"],
@@ -14,8 +14,8 @@ const buttonBindings = new Map([
   [3, "toggleLyrics"],
   [4, "previous"],
   [5, "next"],
-  [12, "toggleMode"],
-  [13, "toggleMode"],
+  [12, "showRadio"],
+  [13, "showDemand"],
   [14, "previous"],
   [15, "next"],
 ]);
@@ -23,8 +23,8 @@ const buttonBindings = new Map([
 const nativeKeyboardControls = "input, select, textarea, audio, video, [role='textbox'], [role='slider'], [role='combobox']";
 const spaceControls = "button, a[href], summary, [role='button'], [role='checkbox'], [role='switch']";
 
-export function wireControls({ previous, next, togglePower, toggleLyrics, toggleMode, isActive = () => true, onGamepadChange }) {
-  const actions = { previous, next, togglePower, toggleLyrics, toggleMode };
+export function wireControls({ previous, next, togglePower, toggleLyrics, showRadio, showDemand, isActive = () => true, onGamepadChange }) {
+  const actions = { previous, next, togglePower, toggleLyrics, showRadio, showDemand };
   let connected = false;
   let previousButtons = new Map();
   let frameId = null;
@@ -90,6 +90,18 @@ export function wireControls({ previous, next, togglePower, toggleLyrics, toggle
           if (!previous?.has(buttonIndex)) {
             newActions.add(action);
           }
+        }
+      }
+
+      const rightStickY = gamepad.axes?.[3] ?? 0;
+      for (const [direction, magnitude, action] of [
+        ["right-stick-up", -rightStickY, "showRadio"],
+        ["right-stick-down", rightStickY, "showDemand"],
+      ]) {
+        const held = previous?.has(direction);
+        if (magnitude > (held ? 0.35 : 0.65)) {
+          pressed.add(direction);
+          if (!held) newActions.add(action);
         }
       }
     }
