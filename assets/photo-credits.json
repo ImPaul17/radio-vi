@@ -1,0 +1,50 @@
+[
+  {
+    "image": "assets/coast.webp",
+    "title": "Tropical beach at sunset with palm trees and colorful sky",
+    "source": "https://unsplash.com/photos/tropical-beach-at-sunset-with-palm-trees-and-colorful-sky-iIjePbsfAwU",
+    "author": "Digital Reach",
+    "license": "Unsplash License",
+    "licenseUrl": "https://unsplash.com/license"
+  },
+  {
+    "image": "assets/marsh.webp",
+    "title": "A sunset over a lake",
+    "source": "https://unsplash.com/photos/a-sunset-over-a-lake-TyVPvSuzkfU",
+    "author": "Richard Sagredo",
+    "license": "Unsplash License",
+    "licenseUrl": "https://unsplash.com/license"
+  },
+  {
+    "image": "assets/city.webp",
+    "title": "A city skyline at night",
+    "source": "https://unsplash.com/photos/a-city-skyline-at-night-xdE-FfmKx7w",
+    "author": "Rolando Yera",
+    "license": "Unsplash License",
+    "licenseUrl": "https://unsplash.com/license"
+  },
+  {
+    "image": "assets/harbor.webp",
+    "title": "Sailboat and boat on the ocean at sunset",
+    "source": "https://unsplash.com/photos/sailboat-and-boat-on-the-ocean-at-sunset-V5BCHunK3hs",
+    "author": "Zoshua Colah",
+    "license": "Unsplash License",
+    "licenseUrl": "https://unsplash.com/license"
+  },
+  {
+    "image": "assets/road.webp",
+    "title": "Palm trees",
+    "source": "https://unsplash.com/photos/palm-trees-y6VwtW6kvSY",
+    "author": "Mark",
+    "license": "Unsplash License",
+    "licenseUrl": "https://unsplash.com/license"
+  },
+  {
+    "image": "assets/club.webp",
+    "title": "The colony hotel glows with blue neon lights at night",
+    "source": "https://unsplash.com/photos/the-colony-hotel-glows-with-blue-neon-lights-at-night-wi-VS3yC-HI",
+    "author": "Sunira Moses",
+    "license": "Unsplash License",
+    "licenseUrl": "https://unsplash.com/license"
+  }
+]

@@ -1,0 +1,17 @@
+# Archivos locales del juego y otros medios importados.
+/media/
+/private/
+*.rpf
+*.ttpf
+*.awc
+
+# Desarrollo local.
+/node_modules/
+/dist/
+/.openai/
+/.vite/
+/.env
+/.env.*
+*.log
+Thumbs.db
+.DS_Store
