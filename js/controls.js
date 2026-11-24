@@ -6,12 +6,10 @@ const keyBindings = new Map([
   ["[", "previous"],
   ["]", "next"],
   [" ", "togglePower"],
-  ["l", "toggleLyrics"],
 ]);
 
 const buttonBindings = new Map([
   [0, "togglePower"],
-  [3, "toggleLyrics"],
   [4, "previous"],
   [5, "next"],
   [12, "showRadio"],
@@ -23,8 +21,8 @@ const buttonBindings = new Map([
 const nativeKeyboardControls = "input, select, textarea, audio, video, [role='textbox'], [role='slider'], [role='combobox']";
 const spaceControls = "button, a[href], summary, [role='button'], [role='checkbox'], [role='switch']";
 
-export function wireControls({ previous, next, togglePower, toggleLyrics, showRadio, showDemand, isActive = () => true, onGamepadChange }) {
-  const actions = { previous, next, togglePower, toggleLyrics, showRadio, showDemand };
+export function wireControls({ previous, next, togglePower, showRadio, showDemand, isActive = () => true, onGamepadChange }) {
+  const actions = { previous, next, togglePower, showRadio, showDemand };
   let connected = false;
   let previousButtons = new Map();
   let frameId = null;
