@@ -26,7 +26,11 @@ def public_files(root, *, media_only=False):
     directories = [("media/logos/png", {".png"})]
     if not media_only:
         paths.update(("index.html", "style.css"))
-        directories.extend([("assets", {".png", ".webp"}), ("js", {".js"})])
+        directories.extend([
+            ("assets", {".png", ".webp"}),
+            ("assets/covers", {".webp"}),
+            ("js", {".js"}),
+        ])
     for directory, suffixes in directories:
         paths.update(
             path.relative_to(root).as_posix()

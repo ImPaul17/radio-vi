@@ -25,7 +25,7 @@ La reproducción usa los archivos locales del juego. Las descripciones de GTA 6 
 
 ## Publicar la interfaz y servir el audio
 
-GitHub Pages publica el HTML, CSS, JavaScript y los archivos de `assets/`. El servidor del PC entrega los audios, el manifiesto, las portadas y la fuente de `media/`. El reproductor usa el origen HTTPS indicado en la variable del repositorio `RADIO_MEDIA_URL`.
+GitHub Pages publica el HTML, CSS, JavaScript y los archivos de `assets/`, incluidas las portadas optimizadas en WebP. La web precarga esas portadas antes de mostrar el selector. El servidor del PC entrega los audios, el manifiesto y la fuente de `media/` desde el origen HTTPS indicado en la variable `RADIO_MEDIA_URL`.
 
 1. Ejecuta `python serve.py --media-only --port 4175` en el equipo que tenga la carpeta `media/`.
 2. Conecta el puerto a un túnel HTTPS de Cloudflare. Para las pruebas, ejecuta `cloudflared tunnel --url http://127.0.0.1:4175`. El enlace temporal cambia al reiniciar el túnel.

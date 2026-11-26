@@ -26,6 +26,17 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 body[data-off] { --interface-filter: grayscale(.65) brightness(.79); }
 body[data-off] .scene-photo { filter: blur(27px) saturate(.48) brightness(.7); }
 
+.cover-loading {
+  display: none;
+  position: fixed;
+  inset: 0;
+  place-items: center;
+  margin: 0;
+  font-size: 1.25rem;
+}
+body[data-loading-covers] .cover-loading { display: grid; }
+body[data-loading-covers] :is(.selector, .playback-dock) { visibility: hidden; }
+
 .selector, .playback-dock {
   filter: var(--interface-filter, none);
   transition: filter 260ms ease;

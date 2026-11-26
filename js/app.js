@@ -14,6 +14,8 @@ const photos = ["coast", "marsh", "city", "harbor", "road", "club"];
 const scenes = [...document.querySelectorAll(".scene-photo")];
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const cards = $("cards");
+const coverImages = new Map();
+const maxCoverWait = 6000;
 const dial = $("dial");
 const modeControl = $("mode-control");
 const stationAudio = $("station-audio");
@@ -120,6 +122,32 @@ function changeScene(station) {
   if (previous !== next) previous.classList.remove("visible");
 }
 
+async function loadCover(station) {
+  const image = new Image();
+  image.alt = "";
+  image.draggable = false;
+  image.src = new URL(`../${station.cover}`, import.meta.url);
+
+  try {
+    await image.decode();
+  } catch {
+    return;
+  }
+
+  coverImages.set(station.id, image);
+  cards.querySelector(`[data-station="${station.id}"] .placeholder`)?.replaceWith(image);
+}
+
+async function preloadCovers() {
+  const stations = Object.values(shelves).flat().filter(({ cover }) => cover);
+  let timeout;
+  await Promise.race([
+    Promise.all(stations.map(loadCover)),
+    new Promise((resolve) => { timeout = setTimeout(resolve, maxCoverWait); }),
+  ]);
+  clearTimeout(timeout);
+}
+
 function stationCard(station, index, active) {
   const button = document.createElement("button");
   button.type = "button";
@@ -129,19 +157,14 @@ function stationCard(station, index, active) {
   button.title = station.name;
   if (active) button.setAttribute("aria-current", "true");
 
-  const placeholder = document.createElement("span");
-  placeholder.className = "placeholder";
-  placeholder.textContent = station.monogram;
-  placeholder.setAttribute("aria-hidden", "true");
-
-  if (station.cover) {
-    const image = new Image();
-    image.src = mediaUrl(station.cover);
-    image.alt = "";
-    image.draggable = false;
-    image.addEventListener("error", () => image.replaceWith(placeholder), { once: true });
+  const image = coverImages.get(station.id);
+  if (image) {
     button.append(image);
   } else {
+    const placeholder = document.createElement("span");
+    placeholder.className = "placeholder";
+    placeholder.textContent = station.monogram;
+    placeholder.setAttribute("aria-hidden", "true");
     button.append(placeholder);
   }
 
@@ -341,6 +364,7 @@ const radioActions = {
 };
 
 wireControls({
+  isActive: () => !document.body.hasAttribute("data-loading-covers"),
   getContext: () => volumeControl.isOpen() ? "volume" : playbackBar.isOpen() ? "playlist" : "radio",
   onAction(action, source) {
     const navigation = navigationActions[action];
@@ -375,4 +399,7 @@ wireControls({
   },
 });
 
-render();
+preloadCovers().then(() => {
+  render();
+  document.body.removeAttribute("data-loading-covers");
+});
