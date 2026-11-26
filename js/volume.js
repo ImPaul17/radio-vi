@@ -6,7 +6,7 @@ export function createVolumeControl({ music, onToggle, onSelect }) {
   const mute = document.getElementById("volume-mute");
   const icon = document.getElementById("volume-icon");
   const selectButton = document.getElementById("volume-select");
-  let lastAudible = 100;
+  let lastAudible = Number(level.defaultValue);
   let adjusting = false;
 
   function setLevel(value) {

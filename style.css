@@ -289,18 +289,12 @@ body { padding-bottom: 96px; }
   max-height: calc(100% - 32px);
   padding: clamp(17px, 4vw, 28px);
   color: inherit;
-  background: #211b26cc;
-  border: 1px solid #ffffff38;
-  box-shadow: 0 12px 50px #0006;
+  background: transparent;
+  border: 0;
   text-transform: uppercase;
 }
 .settings-dialog[open] { animation: volume-appear 160ms ease-out; }
-.settings-dialog::backdrop { background: #160f1e66; backdrop-filter: blur(12px); }
-.settings-dialog h2 {
-  margin: 0 0 12px;
-  font-size: clamp(1.6rem, 3vw, 2.06rem);
-  text-align: center;
-}
+.settings-dialog::backdrop { background: transparent; backdrop-filter: blur(12px); }
 .settings-options {
   --guide-index: 0;
   --guide-size: 31px;

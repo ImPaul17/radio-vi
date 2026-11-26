@@ -69,14 +69,13 @@
         <button class="playback-action" type="button" id="volume-select" aria-label="Ajustar volumen de la música"><img class="controller-symbol cross" src="assets/controller-cross.png" alt="" width="27" height="27" draggable="false"></button>
         <div class="volume-music">
           <button class="volume-mute" type="button" id="volume-mute" aria-label="Silenciar música"><img id="volume-icon" src="assets/volume-max.png" alt="" width="37" height="32" draggable="false"></button>
-          <input type="range" class="rect-range" id="volume-level" min="0" max="100" value="100" step="1" aria-label="Volumen de la música">
-          <output class="song-time" id="volume-percent" for="volume-level">100%</output>
+          <input type="range" class="rect-range" id="volume-level" min="0" max="100" value="50" step="1" aria-label="Volumen de la música">
+          <output class="song-time" id="volume-percent" for="volume-level">50%</output>
         </div>
       </div>
     </div>
   </section>
-  <dialog class="settings-dialog" id="settings-dialog" aria-labelledby="settings-title">
-    <h2 id="settings-title">Ajustes</h2>
+  <dialog class="settings-dialog" id="settings-dialog" aria-label="Ajustes">
     <div class="settings-options" id="settings-options">
       <div class="settings-option">
         <span id="shuffle-label">Reproducción aleatoria</span>
