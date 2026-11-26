@@ -62,15 +62,12 @@
       <div class="playback-actions">
         <button class="playback-action" type="button" id="playlist-toggle" aria-expanded="false" aria-controls="playlist-panel"><img class="controller-symbol triangle" src="assets/controller-triangle.png" alt="" width="27" height="27" draggable="false"> LISTAS</button>
         <button class="playback-action" type="button" id="volume-toggle" aria-expanded="false" aria-controls="volume-panel"><img class="controller-symbol" src="assets/controller-square.png" alt="" width="27" height="27" draggable="false"> VOLUMEN</button>
+        <button class="playback-action" type="button" id="settings-toggle" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings-dialog"><img class="controller-symbol settings-symbol" src="assets/controller-select.png" alt="" width="34" height="34" draggable="false"> AJUSTES</button>
         <button class="playback-action" type="button" id="menu-exit" aria-controls="playlist-panel volume-panel"><img class="controller-symbol" src="assets/controller-circle.png" alt="" width="27" height="27" draggable="false"> SALIR</button>
       </div>
-      <div class="volume-panel" id="volume-panel" role="group" aria-label="Volumen y efectos de sonido" data-selection="music" hidden>
+      <div class="volume-panel" id="volume-panel" role="group" aria-label="Volumen de la música" hidden>
         <button class="playback-action" type="button" id="volume-select" aria-label="Ajustar volumen de la música"><img class="controller-symbol cross" src="assets/controller-cross.png" alt="" width="27" height="27" draggable="false"></button>
-        <label class="volume-option volume-effects">
-          <span>Efectos de sonido</span>
-          <input type="checkbox" id="effects-enabled" checked>
-        </label>
-        <div class="volume-option volume-music">
+        <div class="volume-music">
           <button class="volume-mute" type="button" id="volume-mute" aria-label="Silenciar música"><img id="volume-icon" src="assets/volume-max.png" alt="" width="37" height="32" draggable="false"></button>
           <input type="range" class="rect-range" id="volume-level" min="0" max="100" value="100" step="1" aria-label="Volumen de la música">
           <output class="song-time" id="volume-percent" for="volume-level">100%</output>
@@ -78,6 +75,21 @@
       </div>
     </div>
   </section>
+  <dialog class="settings-dialog" id="settings-dialog" aria-labelledby="settings-title">
+    <h2 id="settings-title">Ajustes</h2>
+    <div class="settings-options" id="settings-options">
+      <label class="settings-option">
+        <span>Reproducción aleatoria</span>
+        <input type="checkbox" id="shuffle-enabled" data-setting>
+      </label>
+      <label class="settings-option">
+        <span>Efectos de sonido</span>
+        <input type="checkbox" id="effects-enabled" data-setting checked>
+      </label>
+      <button class="playback-action" type="button" id="settings-select" aria-label="Cambiar reproducción aleatoria" autofocus><img class="controller-symbol cross" src="assets/controller-cross.png" alt="" width="27" height="27" draggable="false"></button>
+    </div>
+    <button class="playback-action" type="button" id="settings-exit"><img class="controller-symbol" src="assets/controller-circle.png" alt="" width="27" height="27" draggable="false"> SALIR</button>
+  </dialog>
   <audio id="station-audio" preload="none" hidden></audio>
   <audio id="tune-audio" preload="auto" hidden></audio>
   <audio id="power-audio" preload="auto" hidden></audio>

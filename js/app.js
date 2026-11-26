@@ -4,6 +4,7 @@ import { createRadioPlayer } from "./player.js";
 import { mediaUrl } from "./media-url.js";
 import { createPlaybackBar } from "./playback-bar.js";
 import { createVolumeControl } from "./volume.js";
+import { createSettingsControl } from "./settings.js";
 
 const $ = (id) => document.getElementById(id);
 const shelves = { extra: extraRadioShelf, radio: radioShelf, demand: demandShelf };
@@ -31,6 +32,7 @@ const keyButtons = {
   previous: $("shoulder-left"), next: $("shoulder-right"), togglePower: $("power"),
   previousTrack: $("song-previous"), nextTrack: $("song-next"), togglePlaylist: $("playlist-toggle"),
   toggleVolume: $("volume-toggle"), volumeSelect: $("volume-select"), exitMenu: $("menu-exit"),
+  toggleSettings: $("settings-toggle"), settingsSelect: $("settings-select"),
 };
 
 let mode = "radio";
@@ -71,12 +73,29 @@ const playbackBar = createPlaybackBar({
 
 const volumeControl = createVolumeControl({
   music: stationAudio,
-  effects: [tuneAudio, powerAudio],
   onToggle(open) {
     if (open) playbackBar.close();
     playPowerSound();
   },
   onSelect: playPowerSound,
+});
+
+const settingsControl = createSettingsControl({
+  onOpen() {
+    volumeControl.close();
+    playbackBar.close();
+    playPowerSound();
+  },
+  onClose: playPowerSound,
+  onMove: () => player.playTune(),
+  onSelect: playPowerSound,
+  onShuffleChange: player.setShuffle,
+  onEffectsChange(enabled) {
+    for (const effect of [tuneAudio, powerAudio]) {
+      effect.muted = !enabled;
+      if (effect.muted) effect.pause();
+    }
+  },
 });
 
 function currentShelf() {
@@ -343,12 +362,12 @@ $("menu-exit").addEventListener("click", exitMenu);
 dial.addEventListener("input", () => select(dial.valueAsNumber - 1));
 
 const navigationActions = {
-  left: { radio: "previous", playlist: -1, volume: -5, volumeOption: "music" },
-  right: { radio: "next", playlist: 1, volume: 5, volumeOption: "effects" },
-  up: { radio: "modeUp", playlist: -1, volume: 5, volumeOption: "effects" },
-  down: { radio: "modeDown", playlist: 1, volume: -5, volumeOption: "music" },
-  leftStickUpRight: { radio: "next", playlist: -1, volume: 1, volumeOption: "effects" },
-  leftStickDownLeft: { radio: "previous", playlist: 1, volume: -1, volumeOption: "music" },
+  left: { radio: "previous", playlist: -1, volume: -5 },
+  right: { radio: "next", playlist: 1, volume: 5 },
+  up: { radio: "modeUp", playlist: -1, volume: 5 },
+  down: { radio: "modeDown", playlist: 1, volume: -5 },
+  leftStickUpRight: { radio: "next", playlist: -1, volume: 1 },
+  leftStickDownLeft: { radio: "previous", playlist: 1, volume: -1 },
 };
 
 const radioActions = {
@@ -360,6 +379,7 @@ const radioActions = {
   nextTrack: () => $("song-next").click(),
   togglePlaylist: () => $("playlist-toggle").click(),
   toggleVolume: () => $("volume-toggle").click(),
+  toggleSettings: () => $("settings-toggle").click(),
   togglePower,
   exitMenu,
 };
@@ -367,20 +387,30 @@ const radioActions = {
 wireControls({
   isActive: () => !document.body.hasAttribute("data-loading-covers"),
   getContext() {
+    if (settingsControl.isOpen()) return "settings";
     if (volumeControl.isOpen()) return volumeControl.isAdjusting() ? "volume-adjust" : "volume";
     return playbackBar.isOpen() ? "playlist" : "radio";
   },
   onAction(action, source) {
     const navigation = navigationActions[action];
+    if (settingsControl.isOpen()) {
+      if (action === "exitMenu" || action === "toggleSettings") settingsControl.close();
+      else if (navigation) settingsControl.moveSelection(navigation.playlist);
+      else if (action === "modeUp" || action === "modeDown") settingsControl.moveSelection(action === "modeUp" ? -1 : 1);
+      else if (action === "confirm" || action === "cross") {
+        animateControlPress("settingsSelect");
+        settingsControl.confirm();
+      }
+      return true;
+    }
     const volumeOpen = volumeControl.isOpen();
     const playlistOpen = playbackBar.isOpen();
     const menuOpen = volumeOpen || playlistOpen;
     if (menuOpen && (action === "togglePlaylist" || action === "toggleVolume")) return true;
     if (!menuOpen && action === "exitMenu") return false;
-    if (volumeOpen && action !== "exitMenu") {
+    if (volumeOpen && action !== "exitMenu" && action !== "toggleSettings") {
       if (navigation) {
         if (volumeControl.isAdjusting()) volumeControl.adjust(navigation.volume);
-        else volumeControl.focusOption(navigation.volumeOption);
       } else if (action === "confirm" || action === "cross") {
         animateControlPress("volumeSelect");
         volumeControl.confirm();

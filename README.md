@@ -1,6 +1,6 @@
 # Radio VI
 
-Selector web con 24 emisoras en **Radio**, The Sniper of La Perle en **Bajo Demanda**, y Los Diozes FM, Huelintown FM y Boom-Bap Rap en **Extra Radio**. Las emisoras extra barajan sus pistas al abrir o recargar la página y mantienen ese orden mientras la página siga abierta. Usa HTML, CSS y JavaScript, sin paso de compilación.
+Selector web con 24 emisoras en **Radio**, The Sniper of La Perle en **Bajo Demanda**, y Los Diozes FM, Huelintown FM y Boom-Bap Rap en **Extra Radio**. Las listas de todas las emisoras mantienen el orden del catálogo. Usa HTML, CSS y JavaScript, sin paso de compilación.
 
 ## Abrir en local
 
@@ -13,10 +13,10 @@ Desde la carpeta del proyecto, ejecuta `python serve.py` y abre [Radio VI](http:
 - La radio arranca apagada. Pulsa **Encender**, espacio o ✕ en el mando para empezar a escuchar. Las tres secciones comparten el encendido y cada emisora conserva su posición.
 - La barra L1/R1 indica la posición y permite saltar a cualquier entrada.
 - La barra inferior muestra el tiempo transcurrido y la duración, y permite buscar dentro de la pista. Pulsa L2 o R2 para cambiar de canción con el efecto de sintonía, y △ o **LISTAS** para abrir los temas de la emisora con el sonido del menú.
-- Pulsa □ o **VOLUMEN** para ajustar la música y activar o desactivar los efectos de sonido. El icono de altavoz silencia la música y recupera el último nivel. Los efectos tienen su propio nivel fijo.
-- En **VOLUMEN**, mueve ✕ entre la barra y la casilla **EFECTOS DE SONIDO** con la cruceta, el stick izquierdo o las flechas del teclado. Confirma con ✕, Enter o Espacio. En la barra, las flechas ajustan el volumen en pasos de 5 puntos y el stick en pasos de 1 punto. El stick acelera al mantenerlo inclinado. Pulsa ✕ otra vez para terminar el ajuste.
+- Pulsa □ o **VOLUMEN** para abrir la barra de la música. Selecciónala con ✕, Enter o Espacio. Las flechas ajustan el volumen en pasos de 5 puntos y el stick en pasos de 1 punto. El stick acelera al mantenerlo inclinado. El altavoz silencia la música y recupera el último nivel.
+- Abre **AJUSTES** con SELECT u OPTIONS, elige una casilla con el stick o las flechas y cambia su estado con ✕. **REPRODUCCIÓN ALEATORIA** cambia la secuencia de reproducción y mantiene el orden visual de las listas. **EFECTOS DE SONIDO** silencia o activa los sonidos de la interfaz a su nivel fijo. El navegador recuerda ambas opciones.
 - En **LISTAS**, arrastra el icono L o usa el stick izquierdo, las flechas o la rueda del ratón para avanzar de canción en canción. Pulsa ✕, Enter o haz clic en una canción para reproducirla.
-- Pulsa ◯ o **SALIR** para cerrar **LISTAS** o **VOLUMEN**.
+- Pulsa ◯ o **SALIR** para cerrar **LISTAS**, **VOLUMEN** o **AJUSTES**.
 - Mantén la cruceta, un stick, L1/R1, L2/R2 o una tecla de dirección para repetir el movimiento mientras esté disponible.
 
 El reproductor carga `media/radio-local/manifest.json`. Reproduce las emisiones continuas y avanza entre los cortes en las demás emisoras. En el selector se muestra el título del corte cuando el catálogo de audio lo identifica. `media/` contiene los audios, las portadas y la fuente locales y está excluida de Git. Las fotografías de fondo están acreditadas en `assets/`.

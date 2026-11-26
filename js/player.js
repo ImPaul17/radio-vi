@@ -1,4 +1,3 @@
-import { extraRadioShelf } from "./covers.js";
 import { mediaUrl } from "./media-url.js";
 
 const mediaDirectory = mediaUrl("media/radio-local/");
@@ -13,8 +12,8 @@ async function loadLibrary() {
   return {};
 }
 
-function shuffleTracks(tracks) {
-  const shuffled = [...tracks];
+function shuffleDeck(length, active = -1) {
+  const shuffled = Array.from({ length }, (_, index) => index).filter((index) => index !== active);
   for (let index = shuffled.length - 1; index > 0; index--) {
     const other = Math.floor(Math.random() * (index + 1));
     [shuffled[index], shuffled[other]] = [shuffled[other], shuffled[index]];
@@ -25,6 +24,7 @@ function shuffleTracks(tracks) {
 export function createRadioPlayer({ audio, tune, onChange, onUpdate = () => {} }) {
   const positions = new Map();
   const queues = new Map();
+  const shuffleStates = new Map();
   let library;
   let requestedStation;
   let loadedStation;
@@ -32,14 +32,13 @@ export function createRadioPlayer({ audio, tune, onChange, onUpdate = () => {} }
   let playRequest = 0;
   let playbackMessage;
   let displayed;
+  let shuffleEnabled = false;
+  let chapterEnd;
 
   tune.src = new URL("tune.wav", mediaDirectory);
 
   loadLibrary().then((manifest) => {
     library = manifest;
-    for (const { id } of extraRadioShelf) {
-      if (Array.isArray(library[id])) library[id] = shuffleTracks(library[id]);
-    }
     if (requestedStation) playStation(requestedStation);
     onUpdate();
   });
@@ -69,6 +68,7 @@ export function createRadioPlayer({ audio, tune, onChange, onUpdate = () => {} }
 
   function play() {
     const request = ++playRequest;
+    prepareShuffle();
     showTrack();
     audio.play().catch((error) => {
       if (request !== playRequest || error.name === "AbortError") return;
@@ -117,6 +117,14 @@ export function createRadioPlayer({ audio, tune, onChange, onUpdate = () => {} }
 
     changeStation(id);
     const position = positions.get(id);
+    if (shuffleEnabled && !position) {
+      const queue = queueFor(id);
+      if (queue.length) {
+        const entry = queue[shuffleSelection(id, 1, queue.length, -1)];
+        loadTrack(playlist, entry.index, entry.start);
+        return;
+      }
+    }
     loadTrack(playlist, position?.index ?? 0, position?.time);
   }
 
@@ -172,9 +180,58 @@ export function createRadioPlayer({ audio, tune, onChange, onUpdate = () => {} }
     };
   }
 
-  function playQueueEntry(id, selection) {
-    const entry = queueFor(id)[selection];
-    if (!entry) return;
+  function shuffleState(id, length, active) {
+    if (!shuffleStates.has(id)) {
+      const history = active < 0 ? [] : [active];
+      shuffleStates.set(id, {
+        remaining: shuffleDeck(length, active),
+        history,
+        cursor: history.length - 1,
+      });
+    }
+    return shuffleStates.get(id);
+  }
+
+  function shuffleSelection(id, direction, length, active) {
+    const state = shuffleState(id, length, active);
+    if (direction < 0 && state.cursor >= 0) {
+      state.cursor = Math.max(0, state.cursor - 1);
+      return state.history[state.cursor];
+    }
+    if (state.cursor < state.history.length - 1) return state.history[++state.cursor];
+
+    const previous = state.history[state.cursor];
+    if (!state.remaining.length) {
+      state.remaining = shuffleDeck(length);
+      const last = length - 1;
+      if (last > 0 && state.remaining[last] === previous) {
+        const other = Math.floor(Math.random() * last);
+        [state.remaining[last], state.remaining[other]] = [state.remaining[other], state.remaining[last]];
+      }
+    }
+    const next = state.remaining.pop();
+    state.history.push(next);
+    state.cursor++;
+    return next;
+  }
+
+  function prepareShuffle() {
+    chapterEnd = undefined;
+    if (!shuffleEnabled || !loadedStation || requestedStation !== loadedStation) return;
+    const { queue, active, time } = getPlayback(loadedStation);
+    if (!queue.length) return;
+    shuffleState(loadedStation, queue.length, active);
+    chapterEnd = library[loadedStation][trackIndex]?.chapters?.find(({ start }) => start > time)?.start;
+  }
+
+  function setShuffle(enabled) {
+    if (shuffleEnabled === enabled) return;
+    shuffleEnabled = enabled;
+    shuffleStates.clear();
+    prepareShuffle();
+  }
+
+  function playEntry(id, entry) {
     const playlist = activateStation(id);
     if (!playlist) return;
     if (loadedStation === id && trackIndex === entry.index && !audio.error) {
@@ -186,9 +243,28 @@ export function createRadioPlayer({ audio, tune, onChange, onUpdate = () => {} }
     loadTrack(playlist, entry.index, entry.start);
   }
 
+  function playQueueEntry(id, selection) {
+    const { queue, active } = getPlayback(id);
+    const entry = queue[selection];
+    if (!entry) return;
+    if (shuffleEnabled) {
+      const state = shuffleState(id, queue.length, active);
+      if (state.history[state.cursor] !== selection) {
+        state.history.splice(state.cursor + 1, state.history.length, selection);
+        state.cursor++;
+        state.remaining = state.remaining.filter((index) => index !== selection);
+      }
+    }
+    playEntry(id, entry);
+  }
+
   function stepQueue(id, direction) {
     const { queue, active, index, time } = getPlayback(id);
     if (!queue.length) return;
+    if (shuffleEnabled) {
+      playEntry(id, queue[shuffleSelection(id, direction, queue.length, active)]);
+      return;
+    }
     let next = active + direction;
     if (active < 0) {
       next = direction > 0
@@ -196,19 +272,28 @@ export function createRadioPlayer({ audio, tune, onChange, onUpdate = () => {} }
         : queue.findLastIndex((entry) => entry.index < index || (entry.index === index && entry.start < time));
       if (next < 0 && direction > 0) next = 0;
     }
-    playQueueEntry(id, (next + queue.length) % queue.length);
+    playEntry(id, queue[(next + queue.length) % queue.length]);
   }
 
   function seek(id, seconds) {
     if (requestedStation !== id || loadedStation !== id || !Number.isFinite(seconds)) return;
     const { start, duration } = getPlayback(id);
-    audio.currentTime = start + Math.max(0, Math.min(seconds, duration));
+    const time = start + Math.max(0, Math.min(seconds, duration));
+    if (chapterEnd !== undefined && time >= chapterEnd) {
+      stepQueue(id, 1);
+      return;
+    }
+    audio.currentTime = time;
     updateCaption();
     onUpdate();
   }
 
   audio.addEventListener("ended", () => {
     if (!requestedStation || loadedStation !== requestedStation || !audio.ended) return;
+    if (shuffleEnabled && queueFor(loadedStation).length) {
+      stepQueue(loadedStation, 1);
+      return;
+    }
     const playlist = library[loadedStation];
     loadTrack(playlist, (trackIndex + 1) % playlist.length);
   });
@@ -219,10 +304,15 @@ export function createRadioPlayer({ audio, tune, onChange, onUpdate = () => {} }
 
   for (const event of ["timeupdate", "seeked", "loadedmetadata"]) {
     audio.addEventListener(event, () => {
+      if (chapterEnd !== undefined && requestedStation && loadedStation === requestedStation &&
+          !audio.paused && !audio.seeking && audio.currentTime >= chapterEnd) {
+        stepQueue(loadedStation, 1);
+        return;
+      }
       updateCaption();
       onUpdate();
     });
   }
 
-  return { playStation, pause, playTune, getPlayback, playQueueEntry, stepQueue, seek };
+  return { playStation, pause, playTune, getPlayback, playQueueEntry, stepQueue, seek, setShuffle };
 }
