@@ -1,3 +1,5 @@
+import { bindSwipe } from "./controls.js";
+
 const storageKey = "radio-vi-settings";
 
 function readPreferences() {
@@ -25,10 +27,10 @@ export function createSettingsControl({ onOpen, onClose, onMove, onSelect, onShu
     selected = index;
     options.style.setProperty("--guide-index", index);
     for (const [position, { input }] of choices.entries()) {
-      input.labels[0].toggleAttribute("data-selected", position === index);
+      input.closest(".settings-option").toggleAttribute("data-selected", position === index);
     }
     const input = choices[index].input;
-    const label = input.labels[0].textContent.trim().toLowerCase();
+    const label = document.getElementById(input.getAttribute("aria-labelledby")).textContent.trim().toLowerCase();
     selectButton.setAttribute("aria-label", `${input.checked ? "Desactivar" : "Activar"} ${label}`);
   }
 
@@ -36,6 +38,22 @@ export function createSettingsControl({ onOpen, onClose, onMove, onSelect, onShu
     selectButton.focus({ preventScroll: true });
     choices[selected].input.click();
   }
+
+  function moveSelection(direction) {
+    const index = Math.max(0, Math.min(choices.length - 1, selected + direction));
+    if (index === selected) return;
+    select(index);
+    selectButton.focus({ preventScroll: true });
+    onMove();
+  }
+
+  bindSwipe(selectButton, (x, y) => {
+    if (Math.abs(y) >= Math.abs(x)) moveSelection(Math.sign(y));
+  }, (distance) => {
+    options.classList.toggle("dragging", distance !== null);
+    if (distance === null) options.style.removeProperty("--guide-drag-offset");
+    else options.style.setProperty("--guide-drag-offset", `${distance}px`);
+  });
 
   for (const [index, { key, input, onChange }] of choices.entries()) {
     if (typeof preferences[key] === "boolean") input.checked = preferences[key];
@@ -62,7 +80,9 @@ export function createSettingsControl({ onOpen, onClose, onMove, onSelect, onShu
     toggle.setAttribute("aria-expanded", "true");
     selectButton.focus({ preventScroll: true });
   });
-  selectButton.addEventListener("click", confirm);
+  selectButton.addEventListener("click", (event) => {
+    if (event.detail === 0) confirm();
+  });
   exit.addEventListener("click", () => dialog.close());
   dialog.addEventListener("close", () => {
     toggle.setAttribute("aria-expanded", "false");
@@ -74,12 +94,6 @@ export function createSettingsControl({ onOpen, onClose, onMove, onSelect, onShu
     isOpen: () => dialog.open,
     close: () => dialog.close(),
     confirm,
-    moveSelection(direction) {
-      const index = Math.max(0, Math.min(choices.length - 1, selected + direction));
-      if (index === selected) return;
-      select(index);
-      selectButton.focus({ preventScroll: true });
-      onMove();
-    },
+    moveSelection,
   };
 }

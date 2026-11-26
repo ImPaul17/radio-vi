@@ -317,10 +317,9 @@ body { padding-bottom: 96px; }
   gap: 10px;
   font-size: clamp(1.05rem, 2.8vw, 1.36rem);
   line-height: 1.08;
-  cursor: pointer;
 }
 .settings-option span { opacity: .7; transition: opacity 150ms ease; }
-.settings-option:is(:hover, [data-selected]) span { opacity: 1; }
+.settings-option[data-selected] span { opacity: 1; }
 .settings-option input {
   appearance: none;
   display: grid;
@@ -331,7 +330,7 @@ body { padding-bottom: 96px; }
   margin: 0;
   border: 2px solid #000;
   background: #f8e8df85;
-  cursor: inherit;
+  cursor: pointer;
 }
 .settings-option input:checked { background: #fff; }
 .settings-option input:checked::after {
@@ -353,9 +352,13 @@ body { padding-bottom: 96px; }
   height: var(--guide-step);
   min-height: 0;
   padding: 0;
-  transform: translateY(calc(var(--guide-index) * var(--guide-step)));
+  cursor: ns-resize;
+  touch-action: none;
+  user-select: none;
+  transform: translateY(clamp(0px, calc(var(--guide-index) * var(--guide-step) + var(--guide-drag-offset, 0px)), var(--guide-step)));
   transition: transform 210ms ease;
 }
+.settings-options.dragging #settings-select { transition: none; }
 #settings-select:focus-visible { outline: none; }
 #settings-exit { display: flex; margin: 14px 0 0 auto; }
 .playback-panel {
