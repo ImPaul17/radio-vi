@@ -46,19 +46,19 @@ jobs:
           ):
               raise SystemExit("Configura RADIO_MEDIA_URL con la URL HTTPS del servidor de música.")
 
-          html = Path("index.html").read_text(encoding="utf-8")
           placeholder = '<meta name="radio-media-url" content="">'
-          if html.count(placeholder) != 1:
-              raise SystemExit("Falta la etiqueta de configuración radio-media-url en index.html.")
-
           output = Path("dist")
           output.mkdir()
           media_url = escape(url.rstrip("/"), quote=True)
-          (output / "index.html").write_text(
-              html.replace(placeholder, f'<meta name="radio-media-url" content="{media_url}">'),
-              encoding="utf-8",
-          )
-          for filename in ("style.css", "controller.html", "controller.css", ".nojekyll"):
+          for filename in ("index.html", "controller.html"):
+              html = Path(filename).read_text(encoding="utf-8")
+              if html.count(placeholder) != 1:
+                  raise SystemExit(f"Falta la etiqueta de configuración radio-media-url en {filename}.")
+              (output / filename).write_text(
+                  html.replace(placeholder, f'<meta name="radio-media-url" content="{media_url}">'),
+                  encoding="utf-8",
+              )
+          for filename in ("style.css", "controller.css", ".nojekyll"):
               copy2(filename, output / filename)
           for directory in ("assets", "js"):
               copytree(directory, output / directory, ignore=ignore_patterns(".*"))

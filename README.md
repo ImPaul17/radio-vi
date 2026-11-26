@@ -36,4 +36,4 @@ Para trasladar el audio y el emparejamiento al portátil, copia `serve.py`, `con
 
 ## Tipografía
 
-El selector usa **GTA Art Deco Condensed Bold** con texto blanco y contorno negro. El archivo local es `media/fonts/GTAArtDeco-Condensed-Bold.ttf`.
+La interfaz principal y el mando móvil usan **GTA Art Deco Condensed Bold**. La fuente se carga desde la instalación local del dispositivo o desde `media/fonts/GTAArtDeco-Condensed-Bold.ttf` en el servidor de Radio VI.

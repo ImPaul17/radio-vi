@@ -6,6 +6,7 @@ import { createPlaybackBar } from "./playback-bar.js";
 import { createVolumeControl } from "./volume.js";
 import { createSettingsControl } from "./settings.js";
 import { createControllerPairing } from "./controller-pairing.js";
+import "./radio-font.js";
 
 const $ = (id) => document.getElementById(id);
 const shelves = { extra: extraRadioShelf, radio: radioShelf, demand: demandShelf };
@@ -24,11 +25,6 @@ const stationAudio = $("station-audio");
 const tuneAudio = $("tune-audio");
 const powerAudio = $("power-audio");
 powerAudio.src = mediaUrl("media/radio-local/power.wav");
-document.fonts.add(new FontFace(
-  "GTA Art Deco Condensed",
-  `url(${JSON.stringify(mediaUrl("media/fonts/GTAArtDeco-Condensed-Bold.ttf").href)})`,
-  { weight: "700", display: "swap" },
-));
 const keyButtons = {
   previous: $("shoulder-left"), next: $("shoulder-right"), togglePower: $("power"),
   previousTrack: $("song-previous"), nextTrack: $("song-next"), togglePlaylist: $("playlist-toggle"),

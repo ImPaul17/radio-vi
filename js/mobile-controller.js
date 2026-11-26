@@ -1,4 +1,5 @@
 import { createMobileController } from "./controller-client.js";
+import "./radio-font.js";
 
 const screen = document.getElementById("controller-controls");
 const statusLine = document.getElementById("controller-status");

@@ -2,7 +2,8 @@
   color-scheme: dark;
   background: #292025;
   color: #fff;
-  font: 800 16px/1.1 "Barlow Condensed", "Arial Narrow", sans-serif;
+  font: 700 16px/1.1 "GTA Art Deco Condensed", "Arial Narrow", sans-serif;
+  font-synthesis: none;
   -webkit-tap-highlight-color: transparent;
 }
 
