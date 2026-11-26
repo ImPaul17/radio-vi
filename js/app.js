@@ -34,6 +34,7 @@ const keyButtons = {
   previousTrack: $("song-previous"), nextTrack: $("song-next"), togglePlaylist: $("playlist-toggle"),
   toggleVolume: $("volume-toggle"), volumeSelect: $("volume-select"), exitMenu: $("menu-exit"),
   toggleSettings: $("settings-toggle"), settingsSelect: $("settings-select"),
+  playlistSelect: $("playlist-select"),
 };
 
 let mode = "radio";
@@ -451,6 +452,7 @@ wireControls({
         return true;
       }
       if (action === "confirm" || action === "cross") {
+        animateControlPress("playlistSelect");
         playbackBar.playSelection();
         return true;
       }

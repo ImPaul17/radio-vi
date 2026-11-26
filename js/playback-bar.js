@@ -38,6 +38,7 @@ export function createPlaybackBar({ onChoose, onStep, onSeek, onToggle }) {
   const panel = $("playlist-panel");
   const playlistWindow = $("playlist-window");
   const playlistStick = playlistWindow.querySelector(".playlist-stick");
+  const selectButton = $("playlist-select");
   const toggle = $("playlist-toggle");
   const slider = $("song-progress");
   const elapsed = $("song-elapsed");
@@ -73,6 +74,8 @@ export function createPlaybackBar({ onChoose, onStep, onSeek, onToggle }) {
     playlistWindow.toggleAttribute("data-empty", !visibleRows);
     playlistWindow.style.setProperty("--playlist-last-row", String(Math.max(0, visibleRows - 1)));
     playlistWindow.style.setProperty("--playlist-selected-row", String(Math.max(0, selected - firstVisible)));
+    selectButton.disabled = selected < 0;
+    if (selected >= 0) selectButton.setAttribute("aria-label", `Reproducir ${queue[selected].title}`);
     if (focus || hadRowFocus) {
       const target = list.children[selected - firstVisible]?.firstElementChild ?? toggle;
       if (target !== document.activeElement) target.focus({ preventScroll: true });
@@ -166,6 +169,7 @@ export function createPlaybackBar({ onChoose, onStep, onSeek, onToggle }) {
   });
   $("song-previous").addEventListener("click", () => onStep(-1));
   $("song-next").addEventListener("click", () => onStep(1));
+  selectButton.addEventListener("click", playSelection);
   list.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-index]");
     if (!button || !isOpen()) return;

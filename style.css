@@ -375,6 +375,7 @@ body { padding-bottom: 96px; }
 .playback-panel {
   --playlist-row-height: clamp(40px, 7.3svh, 58px);
   --playlist-stick-size: 30px;
+  --playlist-confirm-width: 31px;
   justify-self: center;
   width: min(100%, 660px);
   overflow: hidden;
@@ -393,7 +394,7 @@ body { padding-bottom: 96px; }
   background: #f9f8f4ad;
   pointer-events: none;
 }
-.playlist-window[data-empty]::before, .playlist-window[data-empty] .playlist-stick { display: none; }
+.playlist-window[data-empty]::before, .playlist-window[data-empty] :is(.playlist-stick, #playlist-select) { display: none; }
 .playlist-stick {
   position: absolute;
   top: calc((var(--playlist-row-height) - var(--playlist-stick-size)) / 2);
@@ -413,6 +414,19 @@ body { padding-bottom: 96px; }
   user-select: none;
 }
 .playlist-window.dragging .playlist-stick { transition: none; }
+#playlist-select {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  display: grid;
+  place-items: center;
+  width: var(--playlist-confirm-width);
+  height: var(--playlist-row-height);
+  min-height: 0;
+  padding: 0;
+  transform: translateY(calc(var(--playlist-selected-row, 0) * var(--playlist-row-height)));
+  transition: transform 180ms ease;
+}
 .playlist-entries { display: grid; margin: 0; padding: 0; list-style: none; }
 .playlist-entries li {
   display: grid;
@@ -420,6 +434,7 @@ body { padding-bottom: 96px; }
   align-items: center;
   gap: 12px;
   height: var(--playlist-row-height);
+  padding-inline-end: calc(var(--playlist-confirm-width) + 4px);
 }
 .playlist-entries li::before {
   content: "";
@@ -442,7 +457,7 @@ body { padding-bottom: 96px; }
 .playback-dock :is(button, input):focus-visible { outline: none; }
 .playback-action:focus-visible, .playlist-entries button:focus-visible strong { color: var(--accent); }
 .playback-dock .rect-range:focus-visible { --track-empty: #f8e8dfb3; }
-:is(.song-skip, .volume-mute):focus-visible img { filter: drop-shadow(0 1px 0 var(--accent)); }
+:is(.song-skip, .volume-mute, #playlist-select):focus-visible img { filter: drop-shadow(0 1px 0 var(--accent)); }
 
 @media (max-width: 880px) {
   :root { --tile: clamp(59px,12vw,98px); }
