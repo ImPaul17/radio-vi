@@ -94,7 +94,7 @@ body[data-loading-covers] :is(.selector, .playback-dock) { visibility: hidden; }
   text-transform: uppercase;
   white-space: nowrap;
 }
-.mode::after, .settings-option::before {
+.mode::after, .settings-stop::before {
   content: "";
   justify-self: center;
   width: 12px;
@@ -304,6 +304,15 @@ body { padding-bottom: 96px; }
   grid-auto-rows: var(--guide-step);
 }
 .settings-options[hidden], .controller-pairing[hidden], .controller-pairing [hidden] { display: none; }
+.settings-stops {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  display: grid;
+  grid-auto-rows: var(--guide-step);
+  width: var(--guide-size);
+}
+.settings-stop { display: grid; place-items: center; touch-action: manipulation; }
 .settings-option {
   position: relative;
   display: grid;
@@ -313,7 +322,7 @@ body { padding-bottom: 96px; }
   font-size: clamp(1.05rem, 2.8vw, 1.36rem);
   line-height: 1.08;
 }
-.settings-option span { opacity: .7; transition: opacity 150ms ease; }
+.settings-option span { grid-column: 2; opacity: .7; transition: opacity 150ms ease; }
 .settings-option[data-selected] span { opacity: 1; }
 #controller-settings { text-align: start; text-transform: inherit; }
 #controller-settings:hover span, #controller-settings:focus-visible span { opacity: 1; }

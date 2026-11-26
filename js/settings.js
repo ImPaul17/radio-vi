@@ -15,6 +15,7 @@ export function createSettingsControl({ onOpen, onClose, onMove, onSelect, onShu
   const dialog = document.getElementById("settings-dialog");
   const options = document.getElementById("settings-options");
   const guide = document.getElementById("settings-guide");
+  const stops = options.querySelectorAll(".settings-stop");
   const selectButton = document.getElementById("settings-select");
   const exit = document.getElementById("settings-exit");
   const toggles = [
@@ -31,7 +32,9 @@ export function createSettingsControl({ onOpen, onClose, onMove, onSelect, onShu
     selected = index;
     options.style.setProperty("--guide-index", index);
     for (const [position, choice] of choices.entries()) {
-      choice.closest(".settings-option").toggleAttribute("data-selected", position === index);
+      const active = position === index;
+      choice.closest(".settings-option").toggleAttribute("data-selected", active);
+      stops[position].setAttribute("aria-pressed", String(active));
     }
     const input = choices[index];
     if (input === controller) {
@@ -54,6 +57,10 @@ export function createSettingsControl({ onOpen, onClose, onMove, onSelect, onShu
     selectButton.focus({ preventScroll: true });
     onMove();
   }
+
+  stops.forEach((stop, index) => {
+    stop.addEventListener("click", () => moveSelection(index - selected));
+  });
 
   bindSwipe(guide, (x, y) => {
     if (Math.abs(y) >= Math.abs(x)) moveSelection(Math.sign(y));
