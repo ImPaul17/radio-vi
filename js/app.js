@@ -8,7 +8,7 @@ import { createVolumeControl } from "./volume.js";
 const $ = (id) => document.getElementById(id);
 const shelves = { extra: extraRadioShelf, radio: radioShelf, demand: demandShelf };
 const modes = Object.keys(shelves);
-const positions = { extra: 0, radio: radioShelf.findIndex(({ id }) => id === "la-ola"), demand: 0 };
+const positions = { extra: 0, radio: 0, demand: 0 };
 const cardOffsets = [-2, -1, 0, 1, 2];
 const photos = ["coast", "marsh", "city", "harbor", "road", "club"];
 const scenes = [...document.querySelectorAll(".scene-photo")];
