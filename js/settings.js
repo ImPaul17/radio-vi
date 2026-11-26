@@ -14,6 +14,7 @@ export function createSettingsControl({ onOpen, onClose, onMove, onSelect, onShu
   const toggle = document.getElementById("settings-toggle");
   const dialog = document.getElementById("settings-dialog");
   const options = document.getElementById("settings-options");
+  const guide = document.getElementById("settings-guide");
   const selectButton = document.getElementById("settings-select");
   const exit = document.getElementById("settings-exit");
   const choices = [
@@ -47,7 +48,7 @@ export function createSettingsControl({ onOpen, onClose, onMove, onSelect, onShu
     onMove();
   }
 
-  bindSwipe(selectButton, (x, y) => {
+  bindSwipe(guide, (x, y) => {
     if (Math.abs(y) >= Math.abs(x)) moveSelection(Math.sign(y));
   }, (distance) => {
     options.classList.toggle("dragging", distance !== null);
@@ -80,9 +81,7 @@ export function createSettingsControl({ onOpen, onClose, onMove, onSelect, onShu
     toggle.setAttribute("aria-expanded", "true");
     selectButton.focus({ preventScroll: true });
   });
-  selectButton.addEventListener("click", (event) => {
-    if (event.detail === 0) confirm();
-  });
+  selectButton.addEventListener("click", confirm);
   exit.addEventListener("click", () => dialog.close());
   dialog.addEventListener("close", () => {
     toggle.setAttribute("aria-expanded", "false");

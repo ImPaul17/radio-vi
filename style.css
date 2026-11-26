@@ -306,9 +306,9 @@ body { padding-bottom: 96px; }
 .settings-option {
   position: relative;
   display: grid;
-  grid-template-columns: var(--guide-size) minmax(0, 1fr) 24px;
+  grid-template-columns: var(--guide-size) minmax(0, 1fr) 24px var(--guide-size);
   align-items: center;
-  gap: 10px;
+  gap: clamp(6px, 2vw, 10px);
   font-size: clamp(1.05rem, 2.8vw, 1.36rem);
   line-height: 1.08;
 }
@@ -336,23 +336,31 @@ body { padding-bottom: 96px; }
   transform: translateY(-1px) rotate(-45deg);
 }
 .settings-option:has(input:focus-visible) span { color: var(--accent); }
-#settings-select {
+#settings-guide, #settings-select {
   position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  display: grid;
-  place-items: center;
   width: var(--guide-size);
-  height: var(--guide-step);
-  min-height: 0;
-  padding: 0;
+  transition: transform 210ms ease;
+}
+#settings-guide {
+  inset-block-start: calc((var(--guide-step) - var(--guide-size)) / 2);
+  inset-inline-start: 0;
+  height: var(--guide-size);
   cursor: ns-resize;
   touch-action: none;
   user-select: none;
   transform: translateY(clamp(0px, calc(var(--guide-index) * var(--guide-step) + var(--guide-drag-offset, 0px)), var(--guide-step)));
-  transition: transform 210ms ease;
 }
-.settings-options.dragging #settings-select { transition: none; }
+.settings-options.dragging #settings-guide { transition: none; }
+#settings-select {
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  display: grid;
+  place-items: center;
+  height: var(--guide-step);
+  min-height: 0;
+  padding: 0;
+  transform: translateY(calc(var(--guide-index) * var(--guide-step)));
+}
 #settings-select:focus-visible { outline: none; }
 #settings-exit { display: flex; margin: 14px 0 0 auto; }
 .playback-panel {
