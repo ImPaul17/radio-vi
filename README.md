@@ -1,6 +1,6 @@
 # Radio VI
 
-Selector web con 24 emisoras en **Radio**, The Sniper of La Perle en **Bajo Demanda**, y Los Diozes FM y Huelintown FM en **Extra Radio**. Las dos emisoras extra barajan sus pistas al abrir o recargar la página y mantienen ese orden mientras la página siga abierta. Usa HTML, CSS y JavaScript, sin paso de compilación.
+Selector web con 24 emisoras en **Radio**, The Sniper of La Perle en **Bajo Demanda**, y Los Diozes FM, Huelintown FM y Boom-Bap Rap en **Extra Radio**. Las emisoras extra barajan sus pistas al abrir o recargar la página y mantienen ese orden mientras la página siga abierta. Usa HTML, CSS y JavaScript, sin paso de compilación.
 
 ## Abrir en local
 
@@ -8,7 +8,7 @@ Desde la carpeta del proyecto, ejecuta `python serve.py` y abre [Radio VI](http:
 
 - Cambia de emisora con ← y →, el stick izquierdo hacia los lados, L1 y R1, las flechas visibles o un gesto horizontal.
 - Arrastra hacia arriba para acceder a **Extra Radio** y hacia abajo para escuchar The Sniper of La Perle en **Bajo Demanda**. También puedes elegir la sección con un clic, con ↑ y ↓ o con el stick derecho.
-- En **Extra Radio** puedes cambiar entre Los Diozes FM y Huelintown FM. Al intentar sintonizar un hueco vacío en **Extra Radio** o **Bajo Demanda**, el carrusel vuelve al centro y suena el efecto de sintonía.
+- En **Extra Radio** puedes cambiar entre las tres emisoras. Al intentar sintonizar un hueco vacío en **Extra Radio** o **Bajo Demanda**, el carrusel vuelve al centro y suena el efecto de sintonía.
 - Selecciona una emisora para escucharla. Las flechas y L1/R1 también reproducen el efecto de sintonía.
 - La radio arranca apagada. Pulsa **Encender**, espacio o ✕ en el mando para empezar a escuchar. Las tres secciones comparten el encendido y cada emisora conserva su posición.
 - La barra L1/R1 indica la posición y permite saltar a cualquier entrada.

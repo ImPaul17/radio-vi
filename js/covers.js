@@ -49,4 +49,9 @@ export const extraRadioShelf = [{
   name: "Huelintown FM",
   monogram: "HT",
   cover: "assets/covers/27-huelintown-fm.webp",
+}, {
+  id: "boom-bap-rap",
+  name: "Boom-Bap Rap",
+  monogram: "BB",
+  cover: "assets/covers/28-boom-bap-rap.webp",
 }];
