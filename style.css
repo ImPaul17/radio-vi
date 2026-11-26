@@ -12,7 +12,7 @@
 * { box-sizing: border-box; }
 body { margin: 0; min-height: 100vh; min-height: 100svh; background: #241d20; color: var(--foreground); font: 700 15px/1.4 var(--type); font-synthesis: none; }
 button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; }
-.mode, .power, .card .placeholder, .station-info, .song-time, .playback-action, .playback-panel {
+.mode, .power, .card .placeholder, .station-info, .song-time, .playback-action, .playback-panel, .volume-panel {
   -webkit-text-stroke: 2px #000;
   paint-order: stroke fill;
 }
@@ -259,15 +259,56 @@ body { padding-bottom: 96px; }
   inset-block-end: calc(100% + 10px);
   width: min(258px, 100% - var(--actions-inset));
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) 44px;
-  align-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 7px 10px;
   animation: volume-appear 160ms ease-out;
 }
 @keyframes volume-appear {
   from { transform: translateY(6px); opacity: 0; }
 }
+.volume-option {
+  display: grid;
+  align-items: center;
+  gap: 3px 8px;
+  opacity: .66;
+  text-transform: uppercase;
+  transition: opacity 150ms ease;
+}
+.volume-panel[data-selection="music"] .volume-music,
+.volume-panel[data-selection="effects"] .volume-effects,
+.volume-option:hover { opacity: 1; }
+.volume-music { grid-template-columns: 34px minmax(0, 1fr) 44px; }
+.volume-music label { grid-column: 2 / -1; }
+.volume-effects {
+  grid-template-columns: 34px minmax(0, 1fr);
+  min-height: 28px;
+  cursor: pointer;
+}
+.volume-effects input {
+  appearance: none;
+  display: grid;
+  place-content: center;
+  justify-self: center;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  border: 2px solid #000;
+  background: #f8e8df85;
+  cursor: inherit;
+}
+.volume-effects input:checked { background: #fff; }
+.volume-effects input:checked::after {
+  content: "";
+  width: 10px;
+  height: 6px;
+  border: solid #000;
+  border-width: 0 0 2px 2px;
+  transform: translateY(-1px) rotate(-45deg);
+}
+.volume-effects input:focus-visible + span,
+.volume-panel[data-adjusting] .volume-music label { color: var(--accent); }
+.volume-panel[data-adjusting] #volume-level { --track-empty: #f8e8dfb3; }
+#volume-select { justify-self: end; }
 .volume-mute { display: grid; place-items: center; min-height: 34px; }
 .volume-mute img { display: block; width: 34px; height: auto; pointer-events: none; }
 .volume-panel .song-time { min-width: 0; font-size: 1.15rem; }

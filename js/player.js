@@ -130,6 +130,7 @@ export function createRadioPlayer({ audio, tune, onChange, onUpdate = () => {} }
   }
 
   function playTune() {
+    if (tune.muted) return;
     tune.currentTime = 0;
     tune.play().catch(() => {});
   }

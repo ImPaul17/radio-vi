@@ -30,7 +30,7 @@ document.fonts.add(new FontFace(
 const keyButtons = {
   previous: $("shoulder-left"), next: $("shoulder-right"), togglePower: $("power"),
   previousTrack: $("song-previous"), nextTrack: $("song-next"), togglePlaylist: $("playlist-toggle"),
-  toggleVolume: $("volume-toggle"), exitMenu: $("menu-exit"),
+  toggleVolume: $("volume-toggle"), volumeSelect: $("volume-select"), exitMenu: $("menu-exit"),
 };
 
 let mode = "radio";
@@ -70,14 +70,13 @@ const playbackBar = createPlaybackBar({
 });
 
 const volumeControl = createVolumeControl({
-  audio: [stationAudio, tuneAudio, powerAudio],
+  music: stationAudio,
+  effects: [tuneAudio, powerAudio],
   onToggle(open) {
-    if (open) {
-      playbackBar.close();
-      $("volume-level").focus({ preventScroll: true });
-    }
+    if (open) playbackBar.close();
     playPowerSound();
   },
+  onSelect: playPowerSound,
 });
 
 function currentShelf() {
@@ -278,6 +277,7 @@ function setMode(nextMode) {
   nowPlaying = undefined;
   if (radioOff) player.pause();
   else playSelectedStation();
+  player.playTune();
   render(Math.sign(direction));
 }
 
@@ -287,6 +287,7 @@ function moveMode(direction) {
 }
 
 function playPowerSound() {
+  if (powerAudio.muted) return;
   powerAudio.currentTime = 0;
   powerAudio.play().catch(() => {});
 }
@@ -342,12 +343,12 @@ $("menu-exit").addEventListener("click", exitMenu);
 dial.addEventListener("input", () => select(dial.valueAsNumber - 1));
 
 const navigationActions = {
-  left: { radio: "previous", playlist: -1, volume: -5 },
-  right: { radio: "next", playlist: 1, volume: 5 },
-  up: { radio: "modeUp", playlist: -1, volume: 5 },
-  down: { radio: "modeDown", playlist: 1, volume: -5 },
-  leftStickUpRight: { radio: "next", playlist: -1, volume: 1 },
-  leftStickDownLeft: { radio: "previous", playlist: 1, volume: -1 },
+  left: { radio: "previous", playlist: -1, volume: -5, volumeOption: "music" },
+  right: { radio: "next", playlist: 1, volume: 5, volumeOption: "effects" },
+  up: { radio: "modeUp", playlist: -1, volume: 5, volumeOption: "music" },
+  down: { radio: "modeDown", playlist: 1, volume: -5, volumeOption: "effects" },
+  leftStickUpRight: { radio: "next", playlist: -1, volume: 1, volumeOption: "music" },
+  leftStickDownLeft: { radio: "previous", playlist: 1, volume: -1, volumeOption: "effects" },
 };
 
 const radioActions = {
@@ -365,7 +366,10 @@ const radioActions = {
 
 wireControls({
   isActive: () => !document.body.hasAttribute("data-loading-covers"),
-  getContext: () => volumeControl.isOpen() ? "volume" : playbackBar.isOpen() ? "playlist" : "radio",
+  getContext() {
+    if (volumeControl.isOpen()) return volumeControl.isAdjusting() ? "volume-adjust" : "volume";
+    return playbackBar.isOpen() ? "playlist" : "radio";
+  },
   onAction(action, source) {
     const navigation = navigationActions[action];
     const volumeOpen = volumeControl.isOpen();
@@ -373,8 +377,14 @@ wireControls({
     const menuOpen = volumeOpen || playlistOpen;
     if (menuOpen && (action === "togglePlaylist" || action === "toggleVolume")) return true;
     if (!menuOpen && action === "exitMenu") return false;
-    if (volumeOpen && navigation) {
-      volumeControl.adjust(navigation.volume);
+    if (volumeOpen && action !== "exitMenu") {
+      if (navigation) {
+        if (volumeControl.isAdjusting()) volumeControl.adjust(navigation.volume);
+        else volumeControl.focusOption(navigation.volumeOption);
+      } else if (action === "confirm" || action === "cross") {
+        animateControlPress("volumeSelect");
+        volumeControl.confirm();
+      }
       return true;
     }
     if (playlistOpen) {
@@ -388,8 +398,6 @@ wireControls({
         return true;
       }
     }
-    if (volumeOpen && (action === "previous" || action === "next")) return true;
-
     const radioAction = navigation?.radio ?? (action === "cross" ? "togglePower" : action);
     const run = radioActions[radioAction];
     if (!run) return false;
