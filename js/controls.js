@@ -1,30 +1,98 @@
 const keyBindings = new Map([
-  ["arrowleft", "previous"],
-  ["arrowright", "next"],
-  ["arrowup", "showRadio"],
-  ["arrowdown", "showDemand"],
+  ["arrowleft", "left"],
+  ["arrowright", "right"],
+  ["arrowup", "up"],
+  ["arrowdown", "down"],
   ["[", "previous"],
   ["]", "next"],
-  [" ", "togglePower"],
+  [" ", "cross"],
+  ["enter", "confirm"],
 ]);
 
 const buttonBindings = new Map([
-  [0, "togglePower"],
+  [0, "cross"],
+  [1, "exitMenu"],
+  [2, "toggleVolume"],
+  [3, "togglePlaylist"],
   [4, "previous"],
   [5, "next"],
-  [12, "showRadio"],
-  [13, "showDemand"],
-  [14, "previous"],
-  [15, "next"],
+  [6, "previousTrack"],
+  [7, "nextTrack"],
+  [12, "up"],
+  [13, "down"],
+  [14, "left"],
+  [15, "right"],
 ]);
 
-const nativeKeyboardControls = "input, select, textarea, audio, video, [role='textbox'], [role='slider'], [role='combobox']";
-const spaceControls = "button, a[href], summary, [role='button'], [role='checkbox'], [role='switch']";
+const stickBindings = [
+  [0, 1, "leftStickUpRight"],
+  [0, -1, "leftStickDownLeft"],
+  [1, -1, "modeUp"],
+  [1, 1, "modeDown"],
+];
 
-export function wireControls({ previous, next, togglePower, showRadio, showDemand, isActive = () => true, onGamepadChange }) {
-  const actions = { previous, next, togglePower, showRadio, showDemand };
+const repeatableActions = new Set([
+  "left", "right", "up", "down", "previous", "next",
+  "leftStickUpRight", "leftStickDownLeft", "modeUp", "modeDown", "previousTrack", "nextTrack",
+]);
+const initialRepeatDelay = 350;
+const navigationRepeatInterval = 145;
+const trackRepeatInterval = 220;
+const nativeKeyboardControls = "input:not([type='range']), select, textarea, audio, video, [role='textbox'], [role='slider'], [role='combobox']";
+
+function repeatInterval(action, context, heldFor) {
+  if (context === "volume" && (action === "leftStickUpRight" || action === "leftStickDownLeft")) {
+    if (heldFor >= 1400) return 46;
+    if (heldFor >= 700) return 82;
+  }
+  if (action === "previousTrack" || action === "nextTrack") return trackRepeatInterval;
+  return navigationRepeatInterval;
+}
+
+export function bindSwipe(element, onSwipe, showDrag) {
+  let gesture;
+  let swallowClick = false;
+
+  element.addEventListener("pointerdown", (event) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    swallowClick = false;
+    gesture = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    event.target.setPointerCapture?.(event.pointerId);
+  });
+  element.addEventListener("pointermove", (event) => {
+    if (gesture?.id !== event.pointerId) return;
+    showDrag?.(event.clientY - gesture.y);
+  });
+  element.addEventListener("pointerup", (event) => {
+    if (gesture?.id !== event.pointerId) return;
+    const x = event.clientX - gesture.x;
+    const y = event.clientY - gesture.y;
+    gesture = undefined;
+    showDrag?.(null);
+    if (Math.max(Math.abs(x), Math.abs(y)) >= 24) {
+      swallowClick = true;
+      onSwipe(x, y);
+    }
+  });
+  function cancel(event) {
+    if (gesture?.id !== event.pointerId) return;
+    gesture = undefined;
+    showDrag?.(null);
+  }
+  element.addEventListener("pointercancel", cancel);
+  element.addEventListener("lostpointercapture", cancel);
+  element.addEventListener("click", (event) => {
+    if (!swallowClick || !event.detail) return;
+    swallowClick = false;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, { capture: true });
+}
+
+export function wireControls({ onAction, getContext, isActive = () => true, onGamepadChange }) {
+  const heldKeys = new Map();
   let connected = false;
-  let previousButtons = new Map();
+  let previousGamepads = new Map();
   let frameId = null;
   let skipGamepadActions = false;
 
@@ -34,25 +102,33 @@ export function wireControls({ previous, next, togglePower, showRadio, showDeman
     }
 
     const target = event.target;
-    if (target?.isContentEditable || target?.closest?.(nativeKeyboardControls)) {
-      return;
-    }
-    if (event.key === " " && target?.closest?.(spaceControls)) {
+    if (target?.isContentEditable || target?.closest?.(nativeKeyboardControls)) return;
+
+    const action = keyBindings.get(event.key.toLowerCase());
+    if (!action) return;
+
+    const key = event.code || event.key;
+    const context = getContext();
+    const held = heldKeys.get(key);
+    if (!event.repeat) heldKeys.set(key, { context, blocked: false });
+    else if (!held || held.blocked || held.context !== context || !repeatableActions.has(action)) {
+      if (held) held.blocked = true;
+      event.preventDefault();
       return;
     }
 
-    const action = actions[keyBindings.get(event.key.toLowerCase())];
-    if (!action) {
-      return;
-    }
-
-    event.preventDefault();
-    if (!event.repeat) {
-      action();
-    }
+    if (target?.closest?.("#song-progress, #volume-level")) return;
+    if (event.key === " " && target?.closest?.("[data-playback-controls] button")) return;
+    if (action === "confirm" && target?.closest?.("button, a[href]")) return;
+    if (onAction(action, "keyboard")) event.preventDefault();
   }
 
-  function pauseGamepadActions() {
+  function handleKeyUp(event) {
+    heldKeys.delete(event.code || event.key);
+  }
+
+  function pauseControls() {
+    heldKeys.clear();
     skipGamepadActions = true;
   }
 
@@ -62,7 +138,7 @@ export function wireControls({ previous, next, togglePower, showRadio, showDeman
     }
   }
 
-  function pollGamepads() {
+  function pollGamepads(time) {
     frameId = null;
 
     let gamepads = [];
@@ -72,42 +148,68 @@ export function wireControls({ previous, next, togglePower, showRadio, showDeman
       // The browser can block gamepad access in embedded contexts.
     }
 
-    const pressedByGamepad = new Map();
+    const currentGamepads = new Map();
     const newActions = new Set();
+    const canRunActions = !skipGamepadActions && !document.hidden && document.hasFocus() && isActive();
+    const context = getContext();
+    skipGamepadActions = false;
+
+    function recordPress(button, action, previous, pressed) {
+      const held = previous?.get(button);
+      const press = held ?? {
+        context,
+        startedAt: time,
+        repeatAt: repeatableActions.has(action) ? time + initialRepeatDelay : Infinity,
+      };
+      if (!canRunActions || press.context !== context) {
+        press.repeatAt = Infinity;
+      } else if (!held || time >= press.repeatAt) {
+        newActions.add(action);
+        if (held) press.repeatAt = time + repeatInterval(action, context, time - press.startedAt);
+      }
+      pressed.set(button, press);
+    }
+
     for (const gamepad of gamepads) {
       if (!gamepad?.connected || gamepad.mapping !== "standard") {
         continue;
       }
 
-      const pressed = new Set();
-      const previous = previousButtons.get(gamepad.index);
-      pressedByGamepad.set(gamepad.index, pressed);
+      const pressed = new Map();
+      const previousPad = previousGamepads.get(gamepad.index);
+      const previous = previousPad?.pressed;
       for (const [buttonIndex, action] of buttonBindings) {
         if (gamepad.buttons[buttonIndex]?.pressed) {
-          pressed.add(buttonIndex);
-          if (!previous?.has(buttonIndex)) {
-            newActions.add(action);
-          }
+          recordPress(buttonIndex, action, previous, pressed);
         }
       }
 
-      const rightStickY = gamepad.axes?.[3] ?? 0;
-      for (const [direction, magnitude, action] of [
-        ["right-stick-up", -rightStickY, "showRadio"],
-        ["right-stick-down", rightStickY, "showDemand"],
-      ]) {
-        const held = previous?.has(direction);
+      const leftX = gamepad.axes?.[0] ?? 0;
+      const leftY = gamepad.axes?.[1] ?? 0;
+      const previousStickContext = previousPad?.leftStickContext;
+      const stickHeld = Math.max(Math.abs(leftX), Math.abs(leftY)) > (previousStickContext === undefined ? 0.65 : 0.35);
+      let leftStickContext;
+      if (stickHeld) {
+        const sameContext = previousStickContext === undefined || previousStickContext === context;
+        leftStickContext = canRunActions && sameContext ? context : null;
+      }
+      currentGamepads.set(gamepad.index, { pressed, leftStickContext });
+
+      const useHorizontalVolume = context === "volume" && Math.abs(leftX) > Math.abs(leftY);
+      const useHorizontalStick = context === "radio" || useHorizontalVolume;
+      const stickPositions = [useHorizontalStick ? leftX : -leftY, gamepad.axes?.[3] ?? 0];
+      for (const [stick, sign, action] of stickBindings) {
+        if (stick === 0 && leftStickContext !== context) continue;
+        const magnitude = sign * stickPositions[stick];
+        const held = previous?.has(action);
         if (magnitude > (held ? 0.35 : 0.65)) {
-          pressed.add(direction);
-          if (!held) newActions.add(action);
+          recordPress(action, action, previous, pressed);
         }
       }
     }
 
-    previousButtons = pressedByGamepad;
-    const hasGamepad = pressedByGamepad.size > 0;
-    const canRunActions = !skipGamepadActions && !document.hidden && document.hasFocus() && isActive();
-    skipGamepadActions = false;
+    previousGamepads = currentGamepads;
+    const hasGamepad = currentGamepads.size > 0;
     if (hasGamepad) {
       scheduleGamepadPoll();
     }
@@ -115,27 +217,28 @@ export function wireControls({ previous, next, togglePower, showRadio, showDeman
       connected = hasGamepad;
       onGamepadChange?.(connected);
     }
-    if (canRunActions) {
-      for (const action of newActions) {
-        actions[action]?.();
-      }
+    for (const action of newActions) {
+      if (getContext() !== context) break;
+      onAction(action, "gamepad");
     }
   }
 
   window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("keyup", handleKeyUp);
+  window.addEventListener("blur", pauseControls);
   onGamepadChange?.(false);
   if (typeof window.navigator.getGamepads === "function") {
     window.addEventListener("gamepadconnected", scheduleGamepadPoll);
     window.addEventListener("gamepaddisconnected", scheduleGamepadPoll);
-    window.addEventListener("blur", pauseGamepadActions);
     scheduleGamepadPoll();
   }
 
   return () => {
     window.removeEventListener("keydown", handleKeyDown);
+    window.removeEventListener("keyup", handleKeyUp);
     window.removeEventListener("gamepadconnected", scheduleGamepadPoll);
     window.removeEventListener("gamepaddisconnected", scheduleGamepadPoll);
-    window.removeEventListener("blur", pauseGamepadActions);
+    window.removeEventListener("blur", pauseControls);
     if (frameId !== null) {
       window.cancelAnimationFrame(frameId);
     }

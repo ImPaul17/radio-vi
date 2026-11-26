@@ -4,37 +4,74 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#211d21">
+  <meta name="radio-media-url" content="">
   <title>Radio VI</title>
   <link rel="stylesheet" href="style.css">
   <script type="module" src="js/app.js"></script>
 </head>
-<body>
+<body data-off>
   <div class="scene" aria-hidden="true"><div class="scene-photo"></div><div class="scene-photo"></div></div>
   <main class="selector" aria-label="Selector de Radio VI">
-    <div class="mode-control" id="mode-control" role="group" aria-label="Modo de escucha. Arrastra hacia abajo para On Demand">
-      <button type="button" id="radio-mode" class="mode" aria-pressed="true">Radio</button>
-      <button type="button" id="demand-mode" class="mode" aria-pressed="false">On Demand</button>
-      <span class="mode-guide" aria-hidden="true"><span class="mode-thumb">↕</span></span>
+    <div class="mode-control" id="mode-control" role="group" aria-label="Modo de escucha. Desliza hacia arriba o abajo para cambiar de sección">
+      <button type="button" id="extra-mode" class="mode" aria-pressed="false"><span class="mode-label">Extra Radio</span></button>
+      <button type="button" id="radio-mode" class="mode" aria-pressed="true"><span class="mode-label">Radio</span></button>
+      <button type="button" id="demand-mode" class="mode" aria-pressed="false"><span class="mode-label">Bajo Demanda</span></button>
+      <img class="mode-thumb" src="assets/right-stick.png" alt="" width="34" height="34" draggable="false">
     </div>
 
     <section class="station-selector" aria-label="Emisoras y programas">
       <div class="station-strip">
-        <button type="button" id="previous" class="step" aria-label="Anterior"><span aria-hidden="true">‹</span></button>
+        <button type="button" id="previous" class="step" aria-label="Emisora anterior"><img src="assets/station-arrow.png" alt="" width="25" height="25" draggable="false"></button>
         <div class="cards" id="cards" role="group" aria-label="Portadas"></div>
-        <button type="button" id="next" class="step" aria-label="Siguiente"><span aria-hidden="true">›</span></button>
+        <button type="button" id="next" class="step" aria-label="Emisora siguiente"><img src="assets/station-arrow.png" alt="" width="25" height="25" draggable="false"></button>
       </div>
       <div class="tuning">
-        <button type="button" id="shoulder-left" class="shoulder" aria-label="L1, anterior">L1</button>
+        <button type="button" id="shoulder-left" class="shoulder" aria-label="L1, anterior" aria-keyshortcuts="ArrowLeft"><img src="assets/L1.png" alt="" width="35" height="26"></button>
         <input type="range" id="dial" min="1" value="13" max="24" step="1" aria-label="Posición en el catálogo">
-        <button type="button" id="shoulder-right" class="shoulder" aria-label="R1, siguiente">R1</button>
+        <button type="button" id="shoulder-right" class="shoulder" aria-label="R1, siguiente" aria-keyshortcuts="ArrowRight"><img src="assets/R1.png" alt="" width="35" height="26"></button>
       </div>
       <div class="station-info" aria-live="polite" aria-atomic="true">
         <h1 id="station-name">Radio La Ola</h1>
-        <p class="track" id="station-track"></p>
+        <p class="track" id="station-track">Apagada</p>
+        <p class="artist" id="station-artist"></p>
       </div>
     </section>
 
-    <button class="power" id="power" type="button"><span class="cross" aria-hidden="true">×</span><span id="power-label">Apagar</span></button>
+    <button class="power" id="power" type="button" aria-keyshortcuts="Space"><img class="controller-symbol cross" src="assets/controller-cross.png" alt="" width="27" height="27" draggable="false"><span id="power-label">Encender</span></button>
   </main>
+  <section class="playback-dock" id="playback-dock" aria-label="Reproducción de la emisora" data-playback-controls>
+    <div class="playback-panel" id="playlist-panel" hidden>
+      <header class="playback-panel-header">
+        <h2 id="playlist-name">LISTAS</h2>
+        <span id="playlist-count"></span>
+      </header>
+      <div class="playlist-window" id="playlist-window" data-empty>
+        <img class="playlist-stick" src="assets/left-stick.png" alt="" title="Arrastra hacia arriba o abajo para cambiar la selección" width="30" height="30" draggable="false">
+        <ol id="playlist-entries" class="playlist-entries" aria-labelledby="playlist-name"></ol>
+      </div>
+    </div>
+    <div class="playback-bar">
+      <div class="song-timeline">
+        <button class="song-skip" type="button" id="song-previous" aria-label="L2, canción anterior" disabled><img src="assets/L2.png" alt="" width="52" height="52" draggable="false"></button>
+        <span id="song-elapsed" class="song-time">00:00</span>
+        <input type="range" class="rect-range" id="song-progress" min="0" max="1" value="0" step="0.1" aria-label="Posición en la canción" disabled>
+        <span id="song-duration" class="song-time">00:00</span>
+        <button class="song-skip" type="button" id="song-next" aria-label="R2, canción siguiente" disabled><img src="assets/R2.png" alt="" width="52" height="52" draggable="false"></button>
+      </div>
+      <div class="playback-actions">
+        <button class="playback-action" type="button" id="playlist-toggle" aria-expanded="false" aria-controls="playlist-panel"><img class="controller-symbol triangle" src="assets/controller-triangle.png" alt="" width="27" height="27" draggable="false"> LISTAS</button>
+        <button class="playback-action" type="button" id="volume-toggle" aria-expanded="false" aria-controls="volume-panel"><img class="controller-symbol" src="assets/controller-square.png" alt="" width="27" height="27" draggable="false"> VOLUMEN</button>
+        <button class="playback-action" type="button" id="menu-exit" aria-controls="playlist-panel volume-panel"><img class="controller-symbol" src="assets/controller-circle.png" alt="" width="27" height="27" draggable="false"> SALIR</button>
+      </div>
+      <div class="volume-panel" id="volume-panel" role="group" aria-label="Volumen" hidden>
+        <button class="volume-mute" type="button" id="volume-mute" aria-label="Silenciar"><img id="volume-icon" src="assets/volume-max.png" alt="" width="37" height="32" draggable="false"></button>
+        <input type="range" class="rect-range" id="volume-level" min="0" max="100" value="100" step="1" aria-label="Nivel de volumen">
+        <output class="song-time" id="volume-percent" for="volume-level">100%</output>
+      </div>
+    </div>
+  </section>
+  <audio id="station-audio" preload="none" hidden></audio>
+  <audio id="tune-audio" preload="auto" hidden></audio>
+  <audio id="power-audio" preload="auto" hidden></audio>
 </body>
 </html>

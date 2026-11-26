@@ -1,0 +1,84 @@
+name: Publicar Radio VI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Preparar la interfaz
+        env:
+          RADIO_MEDIA_URL: ${{ vars.RADIO_MEDIA_URL }}
+        run: |
+          python3 - <<'PY'
+          from html import escape
+          from os import environ
+          from pathlib import Path
+          from shutil import copy2, copytree, ignore_patterns
+          from urllib.parse import urlsplit
+
+          url = environ["RADIO_MEDIA_URL"].strip()
+          try:
+              parsed = urlsplit(url)
+              parsed.port
+          except ValueError:
+              raise SystemExit("RADIO_MEDIA_URL debe ser una URL HTTPS válida.") from None
+
+          if (
+              parsed.scheme != "https" or not parsed.hostname or parsed.username is not None
+              or parsed.query or parsed.fragment or any(char.isspace() for char in url)
+          ):
+              raise SystemExit("Configura RADIO_MEDIA_URL con la URL HTTPS del servidor de música.")
+
+          html = Path("index.html").read_text(encoding="utf-8")
+          placeholder = '<meta name="radio-media-url" content="">'
+          if html.count(placeholder) != 1:
+              raise SystemExit("Falta la etiqueta de configuración radio-media-url en index.html.")
+
+          output = Path("dist")
+          output.mkdir()
+          media_url = escape(url.rstrip("/"), quote=True)
+          (output / "index.html").write_text(
+              html.replace(placeholder, f'<meta name="radio-media-url" content="{media_url}">'),
+              encoding="utf-8",
+          )
+          for filename in ("style.css", ".nojekyll"):
+              copy2(filename, output / filename)
+          for directory in ("assets", "js"):
+              copytree(directory, output / directory, ignore=ignore_patterns(".*"))
+          PY
+      - name: Subir la interfaz
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+          include-hidden-files: true
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

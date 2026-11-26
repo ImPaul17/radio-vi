@@ -1,26 +1,109 @@
-import { radioShelf, demandShelf } from "./covers.js";
-import { wireControls } from "./controls.js";
+import { demandShelf, extraRadioShelf, radioShelf } from "./covers.js";
+import { bindSwipe, wireControls } from "./controls.js";
+import { createRadioPlayer } from "./player.js";
+import { mediaUrl } from "./media-url.js";
+import { createPlaybackBar } from "./playback-bar.js";
+import { createVolumeControl } from "./volume.js";
 
 const $ = (id) => document.getElementById(id);
-const shelves = { radio: radioShelf, demand: demandShelf };
-const positions = { radio: radioShelf.findIndex(({ id }) => id === "la-ola"), demand: 0 };
+const shelves = { extra: extraRadioShelf, radio: radioShelf, demand: demandShelf };
+const modes = Object.keys(shelves);
+const positions = { extra: 0, radio: radioShelf.findIndex(({ id }) => id === "la-ola"), demand: 0 };
+const cardOffsets = [-2, -1, 0, 1, 2];
 const photos = ["coast", "marsh", "city", "harbor", "road", "club"];
 const scenes = [...document.querySelectorAll(".scene-photo")];
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const cards = $("cards");
 const dial = $("dial");
 const modeControl = $("mode-control");
+const stationAudio = $("station-audio");
+const tuneAudio = $("tune-audio");
+const powerAudio = $("power-audio");
+powerAudio.src = mediaUrl("media/radio-local/power.wav");
+document.fonts.add(new FontFace(
+  "GTA Art Deco Condensed",
+  `url(${JSON.stringify(mediaUrl("media/fonts/GTAArtDeco-Condensed-Bold.ttf").href)})`,
+  { weight: "700", display: "swap" },
+));
+const keyButtons = {
+  previous: $("shoulder-left"), next: $("shoulder-right"), togglePower: $("power"),
+  previousTrack: $("song-previous"), nextTrack: $("song-next"), togglePlaylist: $("playlist-toggle"),
+  toggleVolume: $("volume-toggle"), exitMenu: $("menu-exit"),
+};
 
 let mode = "radio";
-let off = false;
+let radioOff = true;
 let sceneIndex = 0;
 let sceneSource = "";
+let nowPlaying;
+let tuningAnimation;
+
+const player = createRadioPlayer({
+  audio: stationAudio,
+  tune: tuneAudio,
+  onChange(track) {
+    nowPlaying = track;
+    renderInfo();
+  },
+  onUpdate: renderPlayback,
+});
+
+const playbackBar = createPlaybackBar({
+  onChoose: (index) => playFromBar((id) => player.playQueueEntry(id, index)),
+  onStep(direction) {
+    player.playTune();
+    playFromBar((id) => player.stepQueue(id, direction));
+  },
+  onToggle(open) {
+    if (open) {
+      volumeControl.close();
+      const selectedTrack = $("playlist-entries").querySelector("[data-selected]");
+      (selectedTrack ?? $("menu-exit")).focus({ preventScroll: true });
+    }
+    playPowerSound();
+  },
+  onSeek(seconds) {
+    if (!radioOff) player.seek(currentStation().id, seconds);
+  },
+});
+
+const volumeControl = createVolumeControl({
+  audio: [stationAudio, tuneAudio, powerAudio],
+  onToggle(open) {
+    if (open) {
+      playbackBar.close();
+      $("volume-level").focus({ preventScroll: true });
+    }
+    playPowerSound();
+  },
+});
 
 function currentShelf() {
   return shelves[mode];
 }
 
-function wrap(index) {
+function currentStation() {
+  return currentShelf()[positions[mode]];
+}
+
+function playSelectedStation() {
+  player.playStation(currentStation().id);
+}
+
+function playFromBar(action) {
+  const wasOff = radioOff;
+  radioOff = false;
+  action(currentStation().id);
+  if (wasOff) render();
+}
+
+function renderPlayback() {
+  const station = currentStation();
+  playbackBar.update({ station, state: player.getPlayback(station.id), off: radioOff });
+}
+
+function stationIndex(index) {
+  if (mode !== "radio") return index;
   const { length } = currentShelf();
   return ((index % length) + length) % length;
 }
@@ -53,7 +136,7 @@ function stationCard(station, index, active) {
 
   if (station.cover) {
     const image = new Image();
-    image.src = station.cover;
+    image.src = mediaUrl(station.cover);
     image.alt = "";
     image.draggable = false;
     image.addEventListener("error", () => image.replaceWith(placeholder), { once: true });
@@ -66,16 +149,29 @@ function stationCard(station, index, active) {
   return button;
 }
 
+function emptyStationCard(offset) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "card card-empty";
+  button.tabIndex = -1;
+  button.setAttribute("aria-label", "Espacio de emisora vacío");
+  button.addEventListener("click", () => rejectTuning(Math.sign(offset)));
+  return button;
+}
+
 function renderCards(direction) {
+  tuningAnimation?.cancel();
   const focusWasInCards = cards.contains(document.activeElement);
-  const previous = new Map([...cards.children].map((card) => [card.dataset.station, card.getBoundingClientRect()]));
+  const previous = new Map([...cards.querySelectorAll("[data-station]")]
+    .map((card) => [card.dataset.station, card.getBoundingClientRect()]));
   const selected = positions[mode];
-  const visible = [-2, -1, 0, 1, 2].map((offset) => {
-    const index = wrap(selected + offset);
-    return stationCard(currentShelf()[index], index, offset === 0);
+  const visible = cardOffsets.map((offset) => {
+    const index = stationIndex(selected + offset);
+    const station = currentShelf()[index];
+    return station ? stationCard(station, index, offset === 0) : emptyStationCard(offset);
   });
   cards.replaceChildren(...visible);
-  if (focusWasInCards) visible[2].focus({ preventScroll: true });
+  if (focusWasInCards) visible[Math.floor(visible.length / 2)].focus({ preventScroll: true });
 
   if (!direction || reducedMotion.matches) return;
   for (const card of visible) {
@@ -90,26 +186,50 @@ function renderCards(direction) {
   }
 }
 
+function renderInfo() {
+  const station = currentStation();
+  const artist = $("station-artist");
+  $("station-name").textContent = station.name;
+  $("station-track").textContent = radioOff ? "Apagada" : nowPlaying?.title ?? station.track ?? "";
+  artist.textContent = radioOff ? "" : nowPlaying?.artist ?? station.artist ?? "";
+  artist.title = !radioOff && nowPlaying?.writers ? `Composición · ${nowPlaying.writers}` : "";
+}
+
 function render(direction = 0) {
-  const station = currentShelf()[positions[mode]];
-  modeControl.dataset.mode = mode;
-  $("radio-mode").setAttribute("aria-pressed", String(mode === "radio"));
-  $("demand-mode").setAttribute("aria-pressed", String(mode === "demand"));
-  $("station-name").textContent = off ? "Radio apagada" : station.name;
-  $("station-track").textContent = off ? "" : [station.track, station.artist].filter(Boolean).join(" · ");
-  $("power-label").textContent = off ? "Encender" : "Apagar";
-  document.body.toggleAttribute("data-off", off);
-  dial.max = currentShelf().length;
-  dial.value = positions[mode] + 1;
-  dial.setAttribute("aria-valuetext", station.name + ", " + dial.value + " de " + dial.max);
+  const canTune = currentShelf().length > 1;
+  const station = currentStation();
+  modeControl.style.setProperty("--guide-index", modes.indexOf(mode));
+  for (const section of modes) $(`${section}-mode`).setAttribute("aria-pressed", String(mode === section));
+  renderInfo();
+  $("power-label").textContent = radioOff ? "Encender" : "Apagar";
+  document.body.dataset.radioMode = mode;
+  document.body.toggleAttribute("data-off", radioOff);
+  dial.disabled = !canTune;
+  dial.max = canTune ? currentShelf().length : cardOffsets.length;
+  dial.value = canTune ? positions[mode] + 1 : cardOffsets.indexOf(0) + 1;
+  dial.setAttribute("aria-valuetext", canTune ? station.name + ", " + dial.value + " de " + dial.max : station.name);
   renderCards(direction);
-  changeScene(station);
+  renderPlayback();
+  if (station.scene != null) changeScene(station);
 }
 
 function select(index, direction = Math.sign(index - positions[mode])) {
-  const selected = wrap(index);
-  if (selected === positions[mode]) return;
+  const selected = stationIndex(index);
+  if (!currentShelf()[selected]) {
+    rejectTuning(direction);
+    return;
+  }
+  if (selected === positions[mode]) {
+    if (!radioOff) playSelectedStation();
+    return;
+  }
+
   positions[mode] = selected;
+  nowPlaying = undefined;
+  if (!radioOff) {
+    player.playTune();
+    playSelectedStation();
+  }
   render(direction);
 }
 
@@ -117,86 +237,142 @@ function step(direction) {
   select(positions[mode] + direction, direction);
 }
 
+function rejectTuning(direction) {
+  player.playTune();
+  if (reducedMotion.matches) return;
+  tuningAnimation?.cancel();
+  tuningAnimation = cards.animate([
+    { transform: "translateX(0)" },
+    { transform: `translateX(${-direction * 8}px)`, offset: .35 },
+    { transform: "translateX(0)" },
+  ], { duration: 180, easing: "ease-out" });
+}
+
 function setMode(nextMode) {
   if (mode === nextMode) return;
+  const direction = modes.indexOf(nextMode) - modes.indexOf(mode);
   mode = nextMode;
-  render(mode === "demand" ? 1 : -1);
+  nowPlaying = undefined;
+  if (radioOff) player.pause();
+  else playSelectedStation();
+  render(Math.sign(direction));
+}
+
+function moveMode(direction) {
+  const nextMode = modes[modes.indexOf(mode) + direction];
+  if (nextMode) setMode(nextMode);
+}
+
+function playPowerSound() {
+  powerAudio.currentTime = 0;
+  powerAudio.play().catch(() => {});
+}
+
+function exitMenu() {
+  const wasVolume = volumeControl.close();
+  if (!wasVolume && !playbackBar.close()) return;
+  $(wasVolume ? "volume-toggle" : "playlist-toggle").focus({ preventScroll: true });
+  playPowerSound();
 }
 
 function togglePower() {
-  off = !off;
+  radioOff = !radioOff;
+  if (radioOff) player.pause();
+  else playSelectedStation();
+  playPowerSound();
   render();
 }
 
-function bindSwipe(element, onSwipe, showDrag) {
-  let gesture;
-  let swallowClick = false;
+function animateControlPress(action) {
+  const button = keyButtons[action];
+  if (!button || button.disabled || reducedMotion.matches) return;
 
-  element.addEventListener("pointerdown", (event) => {
-    if (!event.isPrimary || event.button !== 0) return;
-    swallowClick = false;
-    gesture = { id: event.pointerId, x: event.clientX, y: event.clientY };
-    event.target.setPointerCapture?.(event.pointerId);
-  });
-  element.addEventListener("pointermove", (event) => {
-    if (gesture?.id !== event.pointerId) return;
-    showDrag?.(event.clientY - gesture.y);
-  });
-  element.addEventListener("pointerup", (event) => {
-    if (gesture?.id !== event.pointerId) return;
-    const x = event.clientX - gesture.x;
-    const y = event.clientY - gesture.y;
-    gesture = undefined;
-    showDrag?.(null);
-    if (Math.max(Math.abs(x), Math.abs(y)) >= 24) {
-      swallowClick = true;
-      onSwipe(x, y);
-    }
-  });
-  element.addEventListener("pointercancel", () => {
-    gesture = undefined;
-    showDrag?.(null);
-  });
-  element.addEventListener("click", (event) => {
-    if (!swallowClick || !event.detail) return;
-    swallowClick = false;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-  }, { capture: true });
+  button.firstElementChild.animate([
+    { transform: "none" },
+    { transform: "var(--button-pressed)", offset: .44 },
+    { transform: "none" },
+  ], { duration: 240, easing: "ease-out" });
 }
 
 bindSwipe(cards, (x, y) => {
-  if (Math.abs(y) > Math.abs(x)) setMode(y > 0 ? "demand" : "radio");
+  if (Math.abs(y) > Math.abs(x)) moveMode(Math.sign(y));
   else step(x < 0 ? 1 : -1);
 });
 
 bindSwipe(modeControl, (x, y) => {
-  if (Math.abs(y) >= 24 && Math.abs(y) >= Math.abs(x)) setMode(y > 0 ? "demand" : "radio");
+  if (Math.abs(y) >= 24 && Math.abs(y) >= Math.abs(x)) moveMode(Math.sign(y));
 }, (distance) => {
   if (distance === null) {
-    modeControl.style.removeProperty("--drag-position");
+    modeControl.style.removeProperty("--drag-offset");
     modeControl.classList.remove("dragging");
     return;
   }
-  const start = mode === "demand" ? 34 : 0;
-  const position = Math.max(0, Math.min(34, start + distance));
-  modeControl.style.setProperty("--drag-position", position + "px");
+  modeControl.style.setProperty("--drag-offset", distance + "px");
   modeControl.classList.add("dragging");
 });
 
 for (const id of ["previous", "shoulder-left"]) $(id).addEventListener("click", () => step(-1));
 for (const id of ["next", "shoulder-right"]) $(id).addEventListener("click", () => step(1));
-$("radio-mode").addEventListener("click", () => setMode("radio"));
-$("demand-mode").addEventListener("click", () => setMode("demand"));
+for (const section of modes) $(`${section}-mode`).addEventListener("click", () => setMode(section));
 $("power").addEventListener("click", togglePower);
+$("menu-exit").addEventListener("click", exitMenu);
 dial.addEventListener("input", () => select(dial.valueAsNumber - 1));
 
-wireControls({
+const navigationActions = {
+  left: { radio: "previous", playlist: -1, volume: -5 },
+  right: { radio: "next", playlist: 1, volume: 5 },
+  up: { radio: "modeUp", playlist: -1, volume: 5 },
+  down: { radio: "modeDown", playlist: 1, volume: -5 },
+  leftStickUpRight: { radio: "next", playlist: -1, volume: 1 },
+  leftStickDownLeft: { radio: "previous", playlist: 1, volume: -1 },
+};
+
+const radioActions = {
   previous: () => step(-1),
   next: () => step(1),
-  showRadio: () => setMode("radio"),
-  showDemand: () => setMode("demand"),
+  modeUp: () => moveMode(-1),
+  modeDown: () => moveMode(1),
+  previousTrack: () => $("song-previous").click(),
+  nextTrack: () => $("song-next").click(),
+  togglePlaylist: () => $("playlist-toggle").click(),
+  toggleVolume: () => $("volume-toggle").click(),
   togglePower,
+  exitMenu,
+};
+
+wireControls({
+  getContext: () => volumeControl.isOpen() ? "volume" : playbackBar.isOpen() ? "playlist" : "radio",
+  onAction(action, source) {
+    const navigation = navigationActions[action];
+    const volumeOpen = volumeControl.isOpen();
+    const playlistOpen = playbackBar.isOpen();
+    const menuOpen = volumeOpen || playlistOpen;
+    if (menuOpen && (action === "togglePlaylist" || action === "toggleVolume")) return true;
+    if (!menuOpen && action === "exitMenu") return false;
+    if (volumeOpen && navigation) {
+      volumeControl.adjust(navigation.volume);
+      return true;
+    }
+    if (playlistOpen) {
+      const direction = navigation?.playlist;
+      if (direction) {
+        playbackBar.moveSelection(direction, { focus: source === "keyboard" });
+        return true;
+      }
+      if (action === "confirm" || action === "cross") {
+        playbackBar.playSelection();
+        return true;
+      }
+    }
+    if (volumeOpen && (action === "previous" || action === "next")) return true;
+
+    const radioAction = navigation?.radio ?? (action === "cross" ? "togglePower" : action);
+    const run = radioActions[radioAction];
+    if (!run) return false;
+    animateControlPress(radioAction);
+    run();
+    return true;
+  },
 });
 
 render();

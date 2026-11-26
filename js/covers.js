@@ -1,6 +1,6 @@
-import { onDemand, stations } from "./catalog.js";
+import { stations } from "./catalog.js";
 
-// Preserve the order of the numbered PNGs in the project's cover folder.
+// Keep the numbered PNGs in order.
 export const coverFiles = {
   afrobank: "media/logos/png/1-afrobank-fm.png",
   "back-country": "media/logos/png/2-back-country-radio.png",
@@ -26,16 +26,27 @@ export const coverFiles = {
   worldwide: "media/logos/png/22-worldwide-fm.png",
   "the-vault": "media/logos/png/23-the-vault-radio.png",
   "sniper-la-perle": "media/logos/png/24-the-sniper-of-la-perle.png",
+  mudclub: "media/logos/png/25-thrillbilly-mud-club-radio.png",
 };
 
-const catalogById = new Map([...stations, ...onDemand].map((entry) => [entry.id, entry]));
+const catalogById = new Map(stations.map((entry) => [entry.id, entry]));
 
-export const radioShelf = Object.entries(coverFiles).map(([id, cover]) => ({
+const stationsWithCovers = Object.entries(coverFiles).map(([id, cover]) => ({
   ...catalogById.get(id),
   cover,
 }));
 
-export const demandShelf = onDemand.map((entry) => ({
-  ...entry,
-  cover: coverFiles[entry.id] ?? null,
-}));
+export const demandShelf = stationsWithCovers.filter(({ id }) => id === "sniper-la-perle");
+export const radioShelf = stationsWithCovers.filter((station) => !demandShelf.includes(station));
+
+export const extraRadioShelf = [{
+  id: "los-diozes-fm",
+  name: "Los Diozes FM",
+  monogram: "LD",
+  cover: "media/logos/png/26-los-diozes-fm.png",
+}, {
+  id: "huelintown-fm",
+  name: "Huelintown FM",
+  monogram: "HT",
+  cover: "media/logos/png/27-huelintown-fm.png",
+}];

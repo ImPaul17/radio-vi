@@ -1,7 +1,7 @@
 export const sceneNames = ["Costa", "Pantano", "Ciudad", "Puerto", "Carretera", "Club"];
 
 // Song and programme examples listed in Rockstar's credits.
-// The initial station's track follows the supplied screenshot.
+// Thrillbilly's track follows the supplied screenshot.
 export const stations = [
   {
     id: "afrobank", name: "AfroBank FM", genre: "Afrobeat y amapiano",
@@ -69,11 +69,6 @@ export const stations = [
     track: "Que Viva Chango", artist: "Albita Rodríguez y Willy Chirino", source: "creditos",
   },
   {
-    id: "mudclub", name: "Thrillbilly Mud Club Radio", genre: "Rock alternativo · Nu metal",
-    monogram: "MC", frequency: "RADIO", accent: "#f1a674", ink: "#442415", scene: 1,
-    track: "Freak on a Leash", artist: "Korn", source: "referencia",
-  },
-  {
     id: "on-u", name: "Radio On-U", genre: "Dub y reggae",
     monogram: "OU", frequency: "RADIO", accent: "#91e1af", ink: "#153a2a", scene: 0,
     track: "Dub Inspector", artist: "Adrian Sherwood", source: "creditos",
@@ -123,14 +118,19 @@ export const stations = [
     monogram: "WW", frequency: "FM", accent: "#d2ec9b", ink: "#2d3c1e", scene: 5,
     track: "Star Chasers", artist: "4hero", source: "creditos",
   },
+  {
+    id: "sniper-la-perle", name: "The Sniper of La Perle", genre: "Música haitiana",
+    monogram: "LP", frequency: "RADIO", accent: "#dfb1f7", ink: "#3e2758", scene: 3,
+    track: "Haitian Scarface", artist: "Kodak Black", source: "creditos",
+  },
+  {
+    id: "mudclub", name: "Thrillbilly Mud Club Radio", genre: "Rock alternativo · Nu metal",
+    monogram: "MC", frequency: "RADIO", accent: "#f1a674", ink: "#442415", scene: 1,
+    track: "Freak on a Leash", artist: "Korn", source: "referencia",
+  },
 ];
 
 export const onDemand = [
-  {
-    id: "sniper-la-perle", name: "The Sniper of La Perle", genre: "Música haitiana",
-    monogram: "LP", frequency: "ON DEMAND", accent: "#dfb1f7", ink: "#3e2758", scene: 3,
-    track: "Haitian Scarface", artist: "Kodak Black", source: "creditos",
-  },
   {
     id: "drunk-kings", name: "Drunk Kings", genre: "Podcast · Entrevistas",
     monogram: "DK", frequency: "ON DEMAND", accent: "#fbad77", ink: "#4f2518", scene: 5,
