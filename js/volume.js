@@ -7,7 +7,6 @@ export function createVolumeControl({ music, effects, onToggle, onSelect }) {
   const icon = document.getElementById("volume-icon");
   const effectsEnabled = document.getElementById("effects-enabled");
   const selectButton = document.getElementById("volume-select");
-  const selectLabel = selectButton.querySelector("span");
   let lastAudible = 100;
   let selection = "music";
   let adjusting = false;
@@ -36,10 +35,18 @@ export function createVolumeControl({ music, effects, onToggle, onSelect }) {
     }
   }
 
+  function updateSelectLabel() {
+    if (selection === "effects") {
+      selectButton.setAttribute("aria-label", effectsEnabled.checked ? "Desactivar efectos de sonido" : "Activar efectos de sonido");
+    } else {
+      selectButton.setAttribute("aria-label", adjusting ? "Terminar el ajuste del volumen" : "Ajustar volumen de la música");
+    }
+  }
+
   function setAdjusting(value) {
     adjusting = value;
     panel.toggleAttribute("data-adjusting", value);
-    selectLabel.textContent = value ? "Listo" : "Seleccionar";
+    updateSelectLabel();
   }
 
   function select(option) {
@@ -51,17 +58,16 @@ export function createVolumeControl({ music, effects, onToggle, onSelect }) {
 
   function focusOption(option) {
     select(option);
-    const control = option === "music" ? level : effectsEnabled;
-    control.focus({ preventScroll: true });
+    selectButton.focus({ preventScroll: true });
   }
 
   function confirm() {
+    selectButton.focus({ preventScroll: true });
     if (selection === "effects") {
       effectsEnabled.click();
       return;
     }
     setAdjusting(!adjusting);
-    level.focus({ preventScroll: true });
     onSelect?.();
   }
 
@@ -91,6 +97,7 @@ export function createVolumeControl({ music, effects, onToggle, onSelect }) {
   effectsEnabled.addEventListener("focus", () => select("effects"));
   effectsEnabled.addEventListener("change", () => {
     select("effects");
+    updateSelectLabel();
     applyEffectsSetting();
     onSelect?.();
   });

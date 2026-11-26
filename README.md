@@ -14,7 +14,7 @@ Desde la carpeta del proyecto, ejecuta `python serve.py` y abre [Radio VI](http:
 - La barra L1/R1 indica la posición y permite saltar a cualquier entrada.
 - La barra inferior muestra el tiempo transcurrido y la duración, y permite buscar dentro de la pista. Pulsa L2 o R2 para cambiar de canción con el efecto de sintonía, y △ o **LISTAS** para abrir los temas de la emisora con el sonido del menú.
 - Pulsa □ o **VOLUMEN** para ajustar la música y activar o desactivar los efectos de sonido. El icono de altavoz silencia la música y recupera el último nivel. Los efectos tienen su propio nivel fijo.
-- En **VOLUMEN**, elige **MÚSICA** o **EFECTOS DE SONIDO** con la cruceta o el stick izquierdo y pulsa ✕. En la barra seleccionada, la cruceta ajusta el volumen en pasos de 5 puntos y el stick en pasos de 1 punto. El stick acelera al mantenerlo inclinado. Pulsa ✕ otra vez para salir del ajuste.
+- En **VOLUMEN**, mueve ✕ entre la barra y la casilla **EFECTOS DE SONIDO** con la cruceta, el stick izquierdo o las flechas del teclado. Confirma con ✕, Enter o Espacio. En la barra, las flechas ajustan el volumen en pasos de 5 puntos y el stick en pasos de 1 punto. El stick acelera al mantenerlo inclinado. Pulsa ✕ otra vez para terminar el ajuste.
 - En **LISTAS**, arrastra el icono L o usa el stick izquierdo, las flechas o la rueda del ratón para avanzar de canción en canción. Pulsa ✕, Enter o haz clic en una canción para reproducirla.
 - Pulsa ◯ o **SALIR** para cerrar **LISTAS** o **VOLUMEN**.
 - Mantén la cruceta, un stick, L1/R1, L2/R2 o una tecla de dirección para repetir el movimiento mientras esté disponible.

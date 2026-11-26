@@ -345,10 +345,10 @@ dial.addEventListener("input", () => select(dial.valueAsNumber - 1));
 const navigationActions = {
   left: { radio: "previous", playlist: -1, volume: -5, volumeOption: "music" },
   right: { radio: "next", playlist: 1, volume: 5, volumeOption: "effects" },
-  up: { radio: "modeUp", playlist: -1, volume: 5, volumeOption: "music" },
-  down: { radio: "modeDown", playlist: 1, volume: -5, volumeOption: "effects" },
-  leftStickUpRight: { radio: "next", playlist: -1, volume: 1, volumeOption: "music" },
-  leftStickDownLeft: { radio: "previous", playlist: 1, volume: -1, volumeOption: "effects" },
+  up: { radio: "modeUp", playlist: -1, volume: 5, volumeOption: "effects" },
+  down: { radio: "modeDown", playlist: 1, volume: -5, volumeOption: "music" },
+  leftStickUpRight: { radio: "next", playlist: -1, volume: 1, volumeOption: "effects" },
+  leftStickDownLeft: { radio: "previous", playlist: 1, volume: -1, volumeOption: "music" },
 };
 
 const radioActions = {

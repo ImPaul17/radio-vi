@@ -38,7 +38,7 @@ const repeatableActions = new Set([
 const initialRepeatDelay = 350;
 const navigationRepeatInterval = 145;
 const trackRepeatInterval = 220;
-const nativeKeyboardControls = "input:not([type='range']), select, textarea, audio, video, [role='textbox'], [role='slider'], [role='combobox']";
+const nativeKeyboardControls = "input:not([type='range'], #effects-enabled), select, textarea, audio, video, [role='textbox'], [role='slider'], [role='combobox']";
 
 function repeatInterval(action, context, heldFor) {
   if (context === "volume-adjust" && (action === "leftStickUpRight" || action === "leftStickDownLeft")) {
@@ -117,8 +117,8 @@ export function wireControls({ onAction, getContext, isActive = () => true, onGa
       return;
     }
 
-    if (target?.closest?.("#song-progress, #volume-level")) return;
-    if (event.key === " " && target?.closest?.("[data-playback-controls] button")) return;
+    if (target?.closest?.("#song-progress")) return;
+    if (action === "cross" && target?.closest?.("[data-playback-controls] button, #effects-enabled")) return;
     if (action === "confirm" && target?.closest?.("button, a[href]")) return;
     if (onAction(action, "keyboard")) event.preventDefault();
   }
@@ -195,7 +195,7 @@ export function wireControls({ onAction, getContext, isActive = () => true, onGa
       }
       currentGamepads.set(gamepad.index, { pressed, leftStickContext });
 
-      const useHorizontalVolume = context === "volume-adjust" && Math.abs(leftX) > Math.abs(leftY);
+      const useHorizontalVolume = (context === "volume" || context === "volume-adjust") && Math.abs(leftX) > Math.abs(leftY);
       const useHorizontalStick = context === "radio" || useHorizontalVolume;
       const stickPositions = [useHorizontalStick ? leftX : -leftY, gamepad.axes?.[3] ?? 0];
       for (const [stick, sign, action] of stickBindings) {
