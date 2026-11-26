@@ -303,6 +303,7 @@ body { padding-bottom: 96px; }
   display: grid;
   grid-auto-rows: var(--guide-step);
 }
+.settings-options[hidden], .controller-pairing[hidden], .controller-pairing [hidden] { display: none; }
 .settings-option {
   position: relative;
   display: grid;
@@ -314,6 +315,9 @@ body { padding-bottom: 96px; }
 }
 .settings-option span { opacity: .7; transition: opacity 150ms ease; }
 .settings-option[data-selected] span { opacity: 1; }
+#controller-settings { text-align: start; text-transform: inherit; }
+#controller-settings:hover span, #controller-settings:focus-visible span { opacity: 1; }
+#controller-settings span { grid-column: 2 / 4; }
 .settings-option input {
   appearance: none;
   display: grid;
@@ -348,7 +352,7 @@ body { padding-bottom: 96px; }
   cursor: ns-resize;
   touch-action: none;
   user-select: none;
-  transform: translateY(clamp(0px, calc(var(--guide-index) * var(--guide-step) + var(--guide-drag-offset, 0px)), var(--guide-step)));
+  transform: translateY(clamp(0px, calc(var(--guide-index) * var(--guide-step) + var(--guide-drag-offset, 0px)), calc(var(--guide-last) * var(--guide-step))));
 }
 .settings-options.dragging #settings-guide { transition: none; }
 #settings-select {
@@ -363,6 +367,11 @@ body { padding-bottom: 96px; }
 }
 #settings-select:focus-visible { outline: none; }
 #settings-exit { display: flex; margin: 14px 0 0 auto; }
+.controller-pairing { display: grid; justify-items: center; gap: 12px; text-align: center; }
+.controller-pairing h2 { margin: 0; font-size: clamp(1.4rem, 3vw, 2rem); }
+.controller-pairing p { margin: 0; font-size: 1rem; text-transform: none; }
+.controller-pairing canvas { width: min(100%, 250px, 47svh); height: auto; image-rendering: pixelated; }
+.controller-pairing a { color: inherit; }
 .playback-panel {
   --playlist-row-height: clamp(40px, 7.3svh, 58px);
   --playlist-stick-size: 30px;

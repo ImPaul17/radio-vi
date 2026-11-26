@@ -5,6 +5,7 @@ import { mediaUrl } from "./media-url.js";
 import { createPlaybackBar } from "./playback-bar.js";
 import { createVolumeControl } from "./volume.js";
 import { createSettingsControl } from "./settings.js";
+import { createControllerPairing } from "./controller-pairing.js";
 
 const $ = (id) => document.getElementById(id);
 const shelves = { extra: extraRadioShelf, radio: radioShelf, demand: demandShelf };
@@ -80,16 +81,35 @@ const volumeControl = createVolumeControl({
   onSelect: playPowerSound,
 });
 
+const controllerPairing = createControllerPairing({
+  relay: mediaUrl(""),
+  getScene: () => sceneSource,
+  onViewChange(open) {
+    $("settings-options").hidden = open;
+    if ($("settings-dialog").open) {
+      $(open ? "settings-exit" : "settings-select").focus({ preventScroll: true });
+    }
+  },
+  onPaired() {
+    if (settingsControl.isOpen()) settingsControl.close();
+  },
+});
+
 const settingsControl = createSettingsControl({
   onOpen() {
     volumeControl.close();
     playbackBar.close();
     playPowerSound();
   },
-  onClose: playPowerSound,
+  onClose() {
+    controllerPairing.closeView();
+    playPowerSound();
+  },
   onMove: () => player.playTune(),
   onSelect: playPowerSound,
   onShuffleChange: player.setShuffle,
+  onController: controllerPairing.open,
+  onBack: controllerPairing.closeView,
   onEffectsChange(enabled) {
     for (const effect of [tuneAudio, powerAudio]) {
       effect.muted = !enabled;
@@ -386,7 +406,10 @@ const radioActions = {
 
 wireControls({
   isActive: () => !document.body.hasAttribute("data-loading-covers"),
+  getRemoteGamepad: controllerPairing.nextGamepad,
+  subscribeRemoteGamepad: controllerPairing.subscribeGamepad,
   getContext() {
+    if (settingsControl.isOpen() && controllerPairing.isOpen()) return "controller-pairing";
     if (settingsControl.isOpen()) return "settings";
     if (volumeControl.isOpen()) return volumeControl.isAdjusting() ? "volume-adjust" : "volume";
     return playbackBar.isOpen() ? "playlist" : "radio";
@@ -394,6 +417,10 @@ wireControls({
   onAction(action, source) {
     const navigation = navigationActions[action];
     if (settingsControl.isOpen()) {
+      if (controllerPairing.isOpen()) {
+        if (action === "exitMenu" || action === "toggleSettings") settingsControl.back();
+        return true;
+      }
       if (action === "exitMenu" || action === "toggleSettings") settingsControl.close();
       else if (navigation) settingsControl.moveSelection(navigation.playlist);
       else if (action === "modeUp" || action === "modeDown") settingsControl.moveSelection(action === "modeUp" ? -1 : 1);

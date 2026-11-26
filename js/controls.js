@@ -91,7 +91,7 @@ export function bindSwipe(element, onSwipe, showDrag) {
   }, { capture: true });
 }
 
-export function wireControls({ onAction, getContext, isActive = () => true, onGamepadChange }) {
+export function wireControls({ onAction, getContext, isActive = () => true, onGamepadChange, getRemoteGamepad, subscribeRemoteGamepad }) {
   const heldKeys = new Map();
   let connected = false;
   let previousGamepads = new Map();
@@ -150,13 +150,15 @@ export function wireControls({ onAction, getContext, isActive = () => true, onGa
       // The browser can block gamepad access in embedded contexts.
     }
 
+    const remote = getRemoteGamepad?.();
     const currentGamepads = new Map();
     const newActions = new Set();
-    const canRunActions = !skipGamepadActions && !document.hidden && document.hasFocus() && isActive();
+    const pageActive = !document.hidden && isActive();
+    const physicalActive = !skipGamepadActions && document.hasFocus();
     const context = getContext();
     skipGamepadActions = false;
 
-    function recordPress(button, action, previous, pressed) {
+    function recordPress(button, action, previous, pressed, canRunActions) {
       const held = previous?.get(button);
       const press = held ?? {
         context,
@@ -172,17 +174,18 @@ export function wireControls({ onAction, getContext, isActive = () => true, onGa
       pressed.set(button, press);
     }
 
-    for (const gamepad of gamepads) {
+    for (const gamepad of [...gamepads, remote]) {
       if (!gamepad?.connected || gamepad.mapping !== "standard") {
         continue;
       }
 
       const pressed = new Map();
+      const canRunActions = pageActive && (gamepad === remote || physicalActive);
       const previousPad = previousGamepads.get(gamepad.index);
       const previous = previousPad?.pressed;
       for (const [buttonIndex, action] of buttonBindings) {
         if (gamepad.buttons[buttonIndex]?.pressed) {
-          recordPress(buttonIndex, action, previous, pressed);
+          recordPress(buttonIndex, action, previous, pressed, canRunActions);
         }
       }
 
@@ -205,7 +208,7 @@ export function wireControls({ onAction, getContext, isActive = () => true, onGa
         const magnitude = sign * stickPositions[stick];
         const held = previous?.has(action);
         if (magnitude > (held ? 0.35 : 0.65)) {
-          recordPress(action, action, previous, pressed);
+          recordPress(action, action, previous, pressed, canRunActions);
         }
       }
     }
@@ -229,6 +232,7 @@ export function wireControls({ onAction, getContext, isActive = () => true, onGa
   window.addEventListener("keyup", handleKeyUp);
   window.addEventListener("blur", pauseControls);
   onGamepadChange?.(false);
+  const unsubscribeRemote = subscribeRemoteGamepad?.(scheduleGamepadPoll);
   if (typeof window.navigator.getGamepads === "function") {
     window.addEventListener("gamepadconnected", scheduleGamepadPoll);
     window.addEventListener("gamepaddisconnected", scheduleGamepadPoll);
@@ -236,6 +240,7 @@ export function wireControls({ onAction, getContext, isActive = () => true, onGa
   }
 
   return () => {
+    unsubscribeRemote?.();
     window.removeEventListener("keydown", handleKeyDown);
     window.removeEventListener("keyup", handleKeyUp);
     window.removeEventListener("gamepadconnected", scheduleGamepadPoll);

@@ -58,7 +58,7 @@ jobs:
               html.replace(placeholder, f'<meta name="radio-media-url" content="{media_url}">'),
               encoding="utf-8",
           )
-          for filename in ("style.css", ".nojekyll"):
+          for filename in ("style.css", "controller.html", "controller.css", ".nojekyll"):
               copy2(filename, output / filename)
           for directory in ("assets", "js"):
               copytree(directory, output / directory, ignore=ignore_patterns(".*"))

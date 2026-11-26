@@ -85,9 +85,18 @@
         <span id="effects-label">Efectos de sonido</span>
         <input type="checkbox" id="effects-enabled" aria-labelledby="effects-label" data-setting checked>
       </div>
+      <button class="settings-option" type="button" id="controller-settings"><span>Mando móvil</span></button>
       <img id="settings-guide" src="assets/right-stick.png" alt="" width="31" height="31" draggable="false">
       <button class="playback-action" type="button" id="settings-select" aria-label="Cambiar reproducción aleatoria" autofocus><img class="controller-symbol cross" src="assets/controller-cross.png" alt="" width="27" height="27" draggable="false"></button>
     </div>
+    <section class="controller-pairing" id="controller-pairing" aria-labelledby="controller-pairing-title" hidden>
+      <h2 id="controller-pairing-title">Mando móvil</h2>
+      <p id="controller-pairing-status" role="status"></p>
+      <canvas id="controller-qr" role="img" aria-label="Código QR para vincular el móvil" hidden></canvas>
+      <a id="controller-link" target="_blank" rel="noopener noreferrer" hidden>Abrir enlace del mando</a>
+      <button class="playback-action" type="button" id="controller-retry" hidden>Generar otro código</button>
+      <button class="playback-action" type="button" id="controller-disconnect" hidden>Desconectar mando</button>
+    </section>
     <button class="playback-action" type="button" id="settings-exit"><img class="controller-symbol" src="assets/controller-circle.png" alt="" width="27" height="27" draggable="false"> SALIR</button>
   </dialog>
   <audio id="station-audio" preload="none" hidden></audio>

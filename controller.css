@@ -1,0 +1,190 @@
+:root {
+  color-scheme: dark;
+  background: #292025;
+  color: #fff;
+  font: 800 16px/1.1 "Barlow Condensed", "Arial Narrow", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
+button { color: inherit; font: inherit; cursor: pointer; }
+button:focus-visible, .stick:focus-visible { outline: 2px solid #f8cf9e; outline-offset: 4px; }
+[hidden] { display: none !important; }
+
+.controller-surface {
+  --height-unit: 1svh;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.controller-photo, .controller-surface::after { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.controller-photo {
+  background: url("assets/city.webp") center / cover;
+  transform: scale(1.12);
+  filter: blur(21px) saturate(.76);
+}
+.controller-surface::after {
+  content: "";
+  background: linear-gradient(180deg,#1a1423e0 0%,#25182894 27%,#2b212a30 67%,#17121e70), radial-gradient(ellipse at 50% 37%,transparent 22%,#140e1988 92%);
+}
+
+.controller-status {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: max(10px, var(--safe-top));
+  inset-inline: 30%;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+  text-shadow: 0 1px 5px #120c17;
+}
+.controller-status p { margin: 0; font-size: clamp(15px, calc(var(--height-unit) * 4.5), 23px); }
+#controller-disconnect {
+  min-height: 24px;
+  border: 0;
+  padding: 3px 8px;
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: .22em;
+  opacity: .85;
+  touch-action: manipulation;
+}
+
+.controller-deck {
+  --side-left: max(4%, calc(var(--safe-left) + 8px));
+  --side-right: max(4%, calc(var(--safe-right) + 8px));
+  --face-step: clamp(38px, calc(var(--height-unit) * 14), 70px);
+  --stick-size: clamp(62px, calc(var(--height-unit) * 29), 145px);
+  position: relative;
+  width: min(100%, 1000px);
+  height: min(100%, 500px);
+  transition: opacity 160ms ease;
+}
+.controller-deck[inert] { opacity: .45; }
+.pad-button, .stick { display: grid; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; }
+.pad-button {
+  min-width: 0;
+  padding: 0;
+  border: 1px solid #f9f8f44a;
+  background: #1a1328b3;
+  box-shadow: 0 5px 10px #160f1a47;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.pad-button[data-held] { background: #725453bd; border-color: #f8cf9eb8; }
+
+.pad-glyph {
+  --glyph-size: 32px;
+  display: block;
+  width: var(--glyph-size);
+  height: var(--glyph-size);
+  background: url("assets/mobile-controller-glyphs.webp") no-repeat calc(var(--glyph-index) * 10%) 50% / 1100% 100%;
+  pointer-events: none;
+  transition: transform 100ms ease;
+}
+.pad-button[data-held] .pad-glyph { transform: scale(.89); }
+[data-glyph="cross"] { --glyph-index: 0; }
+[data-glyph="circle"] { --glyph-index: 1; }
+[data-glyph="square"] { --glyph-index: 2; }
+[data-glyph="triangle"] { --glyph-index: 3; }
+[data-glyph="l1"] { --glyph-index: 4; }
+[data-glyph="r1"] { --glyph-index: 5; }
+[data-glyph="l2"] { --glyph-index: 6; }
+[data-glyph="r2"] { --glyph-index: 7; }
+[data-glyph="select"] { --glyph-index: 8; }
+[data-glyph="l"] { --glyph-index: 9; }
+[data-glyph="r"] { --glyph-index: 10; }
+
+.shoulders {
+  position: absolute;
+  inset-block-start: max(4%, calc(var(--safe-top) + 4px));
+  display: grid;
+  grid-template-rows: repeat(2, clamp(30px, calc(var(--height-unit) * 12), 57px));
+  gap: 5px;
+  width: clamp(61px, calc(var(--height-unit) * 23), 113px);
+}
+.shoulders-left { inset-inline-start: var(--side-left); }
+.shoulders-right { inset-inline-end: var(--side-right); }
+.shoulder-button { border-radius: 9px; }
+.shoulder-button .pad-glyph { --glyph-size: clamp(27px, calc(var(--height-unit) * 10), 48px); }
+
+.select-button {
+  position: absolute;
+  inset-block-start: 36%;
+  inset-inline-start: 50%;
+  width: clamp(48px, calc(var(--height-unit) * 16), 72px);
+  height: clamp(38px, calc(var(--height-unit) * 12), 55px);
+  transform: translateX(-50%);
+  border-radius: 10px;
+}
+.select-button .pad-glyph { --glyph-size: clamp(25px, calc(var(--height-unit) * 8), 35px); }
+
+.face-buttons {
+  position: absolute;
+  inset-block-start: 37%;
+  inset-inline-end: var(--side-right);
+  display: grid;
+  grid-template: repeat(3, var(--face-step)) / repeat(3, var(--face-step));
+}
+.face-button { margin: 2px; border-radius: 50%; }
+.face-button .pad-glyph { --glyph-size: calc(var(--face-step) * .76); }
+.triangle { grid-area: 1 / 2; }
+.square { grid-area: 2 / 1; }
+.circle { grid-area: 2 / 3; }
+.cross { grid-area: 3 / 2; }
+
+.stick {
+  position: absolute;
+  inset-block-end: max(11%, calc(var(--safe-bottom) + 10px));
+  width: var(--stick-size);
+  aspect-ratio: 1;
+  border: 2px solid #f9f8f45e;
+  border-radius: 50%;
+  background: radial-gradient(circle, #110d21b8, #292135a3);
+  box-shadow: inset 0 3px 15px #160f1a99;
+  cursor: grab;
+}
+.stick[data-held] { cursor: grabbing; }
+.stick-left { inset-inline-start: max(21%, calc(var(--safe-left) + 10px)); }
+.stick-right { inset-inline-end: calc(var(--side-right) + var(--face-step) * 3 + 9px); }
+.stick-thumb {
+  display: grid;
+  place-items: center;
+  width: 61%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #1a1328;
+  box-shadow: 0 5px 11px #08051193;
+  transform: translate(var(--stick-x, 0), var(--stick-y, 0));
+  transition: transform 120ms ease-out;
+  pointer-events: none;
+}
+.stick[data-held] .stick-thumb { transition: none; }
+.stick-thumb .pad-glyph { --glyph-size: calc(var(--stick-size) * .48); }
+
+@media (orientation: portrait) {
+  .controller-surface {
+    --height-unit: 1svw;
+    --safe-top: env(safe-area-inset-right, 0px);
+    --safe-right: env(safe-area-inset-bottom, 0px);
+    --safe-bottom: env(safe-area-inset-left, 0px);
+    --safe-left: env(safe-area-inset-top, 0px);
+    inset: 50% auto auto 50%;
+    width: 100svh;
+    height: 100svw;
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .controller-deck, .pad-button, .pad-glyph, .stick-thumb { transition: none; }
+}
