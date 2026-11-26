@@ -29,12 +29,23 @@ function trackRow(entry, index) {
   return row;
 }
 
+function trackStop(entry, index) {
+  const stop = document.createElement("button");
+  stop.type = "button";
+  stop.className = "playlist-stop";
+  stop.dataset.index = index;
+  stop.tabIndex = -1;
+  stop.setAttribute("aria-label", `Seleccionar ${entry.title}`);
+  return stop;
+}
+
 const maxVisibleRows = 5;
 const wheelDelay = 150;
 
 export function createPlaybackBar({ onChoose, onStep, onSeek, onToggle }) {
   const $ = (id) => document.getElementById(id);
   const list = $("playlist-entries");
+  const stops = $("playlist-stops");
   const panel = $("playlist-panel");
   const playlistWindow = $("playlist-window");
   const playlistStick = playlistWindow.querySelector(".playlist-stick");
@@ -59,14 +70,17 @@ export function createPlaybackBar({ onChoose, onStep, onSeek, onToggle }) {
     if (rebuild || renderedFirst !== firstVisible) {
       const tracks = queue.slice(firstVisible, firstVisible + visibleRows);
       list.replaceChildren(...tracks.map((track, row) => trackRow(track, firstVisible + row)));
+      stops.replaceChildren(...tracks.map((track, row) => trackStop(track, firstVisible + row)));
       renderedFirst = firstVisible;
     }
 
     for (const [row, entry] of [...list.children].entries()) {
       const button = entry.firstElementChild;
       const index = firstVisible + row;
-      button.toggleAttribute("data-selected", index === selected);
-      button.tabIndex = index === selected ? 0 : -1;
+      const isSelected = index === selected;
+      button.toggleAttribute("data-selected", isSelected);
+      button.tabIndex = isSelected ? 0 : -1;
+      stops.children[row].setAttribute("aria-pressed", String(isSelected));
       if (index === active) button.setAttribute("aria-current", "true");
       else button.removeAttribute("aria-current");
     }
@@ -92,10 +106,10 @@ export function createPlaybackBar({ onChoose, onStep, onSeek, onToggle }) {
     return !panel.hidden;
   }
 
-  function moveSelection(direction, { focus = false } = {}) {
-    if (!isOpen() || selected < 0 || !Math.sign(direction)) return false;
+  function selectSong(index, { focus = false } = {}) {
+    if (!isOpen() || selected < 0) return false;
 
-    const next = Math.min(queue.length - 1, Math.max(0, selected + Math.sign(direction)));
+    const next = Math.min(queue.length - 1, Math.max(0, index));
     if (next === selected) {
       if (focus) renderWindow({ focus: true });
       return false;
@@ -106,6 +120,11 @@ export function createPlaybackBar({ onChoose, onStep, onSeek, onToggle }) {
     if (selected >= firstVisible + maxVisibleRows) firstVisible = selected - maxVisibleRows + 1;
     renderWindow({ focus });
     return true;
+  }
+
+  function moveSelection(direction, options) {
+    const step = Math.sign(direction);
+    return step ? selectSong(selected + step, options) : false;
   }
 
   function playSelection() {
@@ -170,11 +189,14 @@ export function createPlaybackBar({ onChoose, onStep, onSeek, onToggle }) {
   $("song-previous").addEventListener("click", () => onStep(-1));
   $("song-next").addEventListener("click", () => onStep(1));
   selectButton.addEventListener("click", playSelection);
+  stops.addEventListener("click", (event) => {
+    const stop = event.target.closest(".playlist-stop");
+    if (stop) selectSong(Number(stop.dataset.index), { focus: true });
+  });
   list.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-index]");
     if (!button || !isOpen()) return;
-    selected = Number(button.dataset.index);
-    renderWindow();
+    selectSong(Number(button.dataset.index));
     playSelection();
   });
   panel.addEventListener("wheel", (event) => {

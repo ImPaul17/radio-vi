@@ -312,7 +312,7 @@ body { padding-bottom: 96px; }
   grid-auto-rows: var(--guide-step);
   width: var(--guide-size);
 }
-.settings-stop { display: grid; place-items: center; touch-action: manipulation; }
+:is(.settings-stop, .playlist-stop) { display: grid; place-items: center; touch-action: manipulation; }
 .settings-option {
   position: relative;
   display: grid;
@@ -404,6 +404,14 @@ body { padding-bottom: 96px; }
   pointer-events: none;
 }
 .playlist-window[data-empty]::before, .playlist-window[data-empty] :is(.playlist-stick, #playlist-select) { display: none; }
+.playlist-stops {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  display: grid;
+  grid-auto-rows: var(--playlist-row-height);
+  width: var(--playlist-stick-size);
+}
 .playlist-stick {
   position: absolute;
   top: calc((var(--playlist-row-height) - var(--playlist-stick-size)) / 2);
@@ -445,7 +453,7 @@ body { padding-bottom: 96px; }
   height: var(--playlist-row-height);
   padding-inline-end: calc(var(--playlist-confirm-width) + 4px);
 }
-.playlist-entries li::before {
+.playlist-stop::before {
   content: "";
   justify-self: center;
   width: 10px;
@@ -454,7 +462,7 @@ body { padding-bottom: 96px; }
   border-radius: 50%;
   background: var(--glyph-face);
 }
-.playlist-entries button { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; align-self: stretch; gap: 10px; min-width: 0; padding: 2px 8px; border-inline-start: 2px solid transparent; line-height: 1.07; text-align: left; text-transform: inherit; }
+.playlist-entries button { grid-column: 2; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; align-self: stretch; gap: 10px; min-width: 0; padding: 2px 8px; border-inline-start: 2px solid transparent; line-height: 1.07; text-align: left; text-transform: inherit; }
 .playlist-entries button:hover, .playlist-entries button[data-selected] { border-inline-start-color: #fff9; }
 .playlist-entries button[aria-current="true"] { border-inline-start-color: var(--accent); }
 .playlist-entries strong, .playlist-entries button > span:first-child > span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
