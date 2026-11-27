@@ -54,4 +54,9 @@ export const extraRadioShelf = [{
   name: "Boom-Bap Rap",
   monogram: "BB",
   cover: "assets/covers/28-boom-bap-rap.webp",
+}, {
+  id: "palmeo-fm",
+  name: "Palmeo FM",
+  monogram: "PF",
+  cover: "assets/covers/29-palmeo-fm.webp",
 }];

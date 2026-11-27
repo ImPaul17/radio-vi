@@ -1,6 +1,6 @@
 # Radio VI
 
-Selector web con 24 emisoras en **Radio**, The Sniper of La Perle en **Bajo Demanda**, y Los Diozes FM, Huelintown FM y Boom-Bap Rap en **Extra Radio**. Las listas de todas las emisoras mantienen el orden del catálogo. Usa HTML, CSS y JavaScript, sin paso de compilación.
+Selector web con 24 emisoras en **Radio**, The Sniper of La Perle en **Bajo Demanda**, y Los Diozes FM, Huelintown FM, Boom-Bap Rap y Palmeo FM en **Extra Radio**. Las listas de todas las emisoras mantienen el orden del catálogo. Usa HTML, CSS y JavaScript, sin paso de compilación.
 
 ## Abrir en local
 
@@ -8,7 +8,7 @@ Desde la carpeta del proyecto, ejecuta `python serve.py` y abre [Radio VI](http:
 
 - Cambia de emisora con ← y →, el stick izquierdo hacia los lados, L1 y R1, las flechas visibles o un gesto horizontal.
 - Arrastra hacia arriba para acceder a **Extra Radio** y hacia abajo para escuchar The Sniper of La Perle en **Bajo Demanda**. También puedes elegir la sección con un clic, con ↑ y ↓ o con el stick derecho.
-- En **Extra Radio** puedes cambiar entre las tres emisoras. Al intentar sintonizar un hueco vacío en **Extra Radio** o **Bajo Demanda**, el carrusel vuelve al centro y suena el efecto de sintonía.
+- En **Extra Radio** puedes cambiar entre las cuatro emisoras. Al intentar sintonizar un hueco vacío en **Extra Radio** o **Bajo Demanda**, el carrusel vuelve al centro y suena el efecto de sintonía.
 - Selecciona una emisora para escucharla. Las flechas y L1/R1 también reproducen el efecto de sintonía.
 - La radio arranca apagada. Pulsa **Encender**, espacio o ✕ en el mando para empezar a escuchar. Las tres secciones comparten el encendido y cada emisora conserva su posición.
 - La barra L1/R1 indica la posición y permite saltar a cualquier entrada.
@@ -20,7 +20,7 @@ Desde la carpeta del proyecto, ejecuta `python serve.py` y abre [Radio VI](http:
 - Pulsa ◯ o **SALIR** para cerrar **LISTAS**, **VOLUMEN** o **AJUSTES**.
 - Mantén la cruceta, un stick, L1/R1, L2/R2 o una tecla de dirección para repetir el movimiento mientras esté disponible.
 
-El reproductor carga `media/radio-local/manifest.json`. Reproduce las emisiones continuas y avanza entre los cortes en las demás emisoras. En el selector se muestra el título del corte cuando el catálogo de audio lo identifica. `media/` contiene los audios, las portadas y la fuente locales y está excluida de Git. Las fotografías de fondo están acreditadas en `assets/`.
+El reproductor carga `media/radio-local/manifest.json`. Reproduce las emisiones continuas y avanza entre los cortes en las demás emisoras. En el selector se muestra el título del corte cuando el catálogo de audio lo identifica. Guarda el PNG de cada emisora a 1500 × 1500 en `media/logos/png/` y su WebP para la interfaz en `assets/covers/`. `media/` está excluida de Git. Las fotografías de fondo están acreditadas en `assets/`.
 
 La reproducción usa los archivos locales del juego. Las descripciones de GTA 6 Radio y los [créditos oficiales](https://www.rockstargames.com/VI/credits) sirven para identificar canciones e intérpretes. En las emisiones continuas el título cambia al llegar a una marca del audio local. Los capítulos pendientes de identificar se muestran por número. Cuando hay créditos de composición, se pueden consultar al pasar el puntero sobre el nombre del intérprete.
 
